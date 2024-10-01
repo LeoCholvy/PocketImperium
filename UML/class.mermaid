@@ -1,0 +1,82 @@
+classDiagram
+    class Main {
+        +main() void
+    }
+    class Data_saver {
+
+    }
+    class Game {
+        +init_game(List~Player~) void
+        -Phase1() void
+        -Phase2() void
+        -Phase3() void
+        +get_Instance()
+        -instance : Game$
+        -play_round() void
+    }
+    class Player {
+        -nmae : string
+        -start_player : bool
+        -commands_order :
+        %% je sais pas quoi mettre en type
+    }
+    class Play_area {
+        -grid
+        +generate() void
+    }
+    class Sector {
+        -score_player : Player
+    }
+    class Border_sector {
+
+    }
+    class Middle_sector {
+
+    }
+    class Tri_prime {
+
+    }
+    class System {
+        +get_system() System
+    }
+    class Ship {
+        -moved : bool
+    }
+    class Cell {
+        +get_number_ship() int
+        +get_system() void
+        +get_control_player() Player
+    }
+
+    Game *--> "2..*" Player
+    Game *--> "1" Play_area
+    Main *--> "1" Game
+    Play_area o--> "46" Cell
+    Sector o--> "1,4,5" Cell
+    Sector <|-- Border_sector
+    Sector <|-- Middle_sector
+    Sector <|-- Tri_prime
+    Cell o--> "*" System
+    Cell o--> "*" Ship
+
+    class IOhandler {
+        -IOmode:Enum~CLI,App~
+        +chose_order()*
+        +expand()*
+        +explore()*
+        +exterminate()*
+    }
+    class CLI {
+        +chose_order()
+        +expand()
+        +explore()
+        +exterminate()
+    }
+    class App {
+        +chose_order()
+        +expand()
+        +explore()
+        +exterminate()
+    }
+    IOhandler <-- CLI : implement
+    IOhandler <-- App : implement
