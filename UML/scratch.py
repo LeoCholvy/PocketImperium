@@ -51,9 +51,6 @@
 # print(a.grid)
 
 
-
-# from builtins import *
-
 class Cell:
     def __init__(self, id):
         # self.ships = []
