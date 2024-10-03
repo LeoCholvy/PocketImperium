@@ -2,48 +2,72 @@ classDiagram
     class Main {
         +main() void
     }
-    class Data_saver {
-
+    class Data_manipulator {
     }
+    class Config {
+        +load_config() void
+    }
+    class Saves {
+        +get_saves()
+        +load_save()
+        +write_save()
+    }
+    Data_manipulator <|-- Config
+    Data_manipulator <|-- Saves
+
     class Game {
         +init_game(List~Player~) void
         -Phase1() void
         -Phase2() void
         -Phase3() void
+        -Phase4() void
+        %% phase 4 pour la phase de score
         +get_Instance()
         -instance : Game$
         -play_round() void
+        -start_player : Player
     }
     class Player {
         -name : string
         -commands_order :
         %% je sais pas quoi mettre en type
         -ships : List~Ship~
+        +Expand() void
+        +Explore() void
+        +Exterminate() void
     }
     class Area {
         -grid
+        +neighbors_pattern$
         +generate() void
     }
-%%  FIXME : How to manage cells neighbors and sectors
     class Sector {
+        -id : int
         -score_player : Player
     }
     class Border_sector {
-
+        -used_patterns : List~1~$
+        +patterns$
+        +generate_system(rotate: bool) void
     }
     class Middle_sector {
-
+        +patterns$
+        +generate_system() void
+        %% se rotate aléatoirement
     }
     class Tri_prime {
-
+        +generate_system() void
     }
     class System {
         -level : int
     }
     class Ship {
         -moved : bool
+        +get_player() Player
     }
     class Cell {
+        -id : int
+        -neighbors : List~Cell~
         +get_system() System
         +get_number_ship() int
         +get_system() void
@@ -53,14 +77,16 @@ classDiagram
     Game *--> "2..*" Player
     Game *--> "1" Area
     Main *--> "1" Game
-    Area o--> "46" Cell
-    Sector o--> "1,4,5" Cell
+    Area "1" o--> "46" Cell
+    Sector "1" o--> "1,4,5" Cell
     Sector <|-- Border_sector
     Sector <|-- Middle_sector
     Sector <|-- Tri_prime
-    Cell o--> "*" System
-%%    Cell o--> "*" Ship
-    Player o--> "15" Ship
+    Cell "1" *--> "*" System
+    Player *--> "15" Ship
+    Area *--> "9" Sector
+    Ship "1" o--> "0,1" Cell
+    Cell "1" o--> "2..*" Cell
 
     class IOhandler {
         -IOmode:Enum~CLI,App~

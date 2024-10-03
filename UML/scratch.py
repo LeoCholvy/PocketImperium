@@ -52,7 +52,7 @@
 
 
 
-from builtins import *
+# from builtins import *
 
 class Cell:
     def __init__(self, id):
@@ -79,6 +79,7 @@ class System:
 class Area:
     def __init__(self):
         self.grid = [Cell(i) for i in range(47)]
+        self.sectors = [Sector(i) for i in range(9)]
         map_neighbors = {
             0 : [14, 15, 19, 24, 21, 26, 23, 28, 32, 33],
             1 : [2, 7],
@@ -97,6 +98,8 @@ class Area:
                 continue
             for j in map_neighbors[i]:
                 self.grid[i].neighbors.append(self.grid[j])
+    def generate(self):
+        pass
     def __str__(self):
         return str(self.grid)
     def __repr__(self):
