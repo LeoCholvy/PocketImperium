@@ -62,9 +62,9 @@ class Cell:
         self.neighbors = []
     def __str__(self):
         if self.system is None:
-            return "[]"
+            return f"[{str(self.id)}:]"
         else:
-            return "[" + str(self.system) + "]"
+            return f"[{str(self.id)}:" + str(self.system) + "]"
     def __repr__(self):
         return self.__str__()
 
@@ -79,18 +79,38 @@ class System:
 class Area:
     def __init__(self):
         self.grid = [Cell(i) for i in range(47)]
+        map_neighbors = {
+            0 : [14, 15, 19, 24, 21, 26, 23, 28, 32, 33],
+            1 : [2, 7],
+            2 : [1, 3, 7, 8],
+
+            18 : [12, 13, 19, 20, 21],
+
+            29 : [26, 27, 28, 34, 35],
+
+            38 : [32, 33, 37, 39, 43, 44],
+
+            46 : [40, 45]
+        }
+        for i in range(47):
+            if map_neighbors.get(i) is None:
+                continue
+            for j in map_neighbors[i]:
+                self.grid[i].neighbors.append(self.grid[j])
     def __str__(self):
         return str(self.grid)
     def __repr__(self):
         return self.__str__()
 
-map_neighbors = {
-    0 : [14, 15, 19, 24, 21, 26, 23, 28, 32, 33],
-    1 : [2, 7],
-    2 : [1, 3, 7, 8],
-    # la suite
-}
+class Sector:
+    def __init__(self, id):
+        self.id = id
+        self.cells = []
+
 
 a = Area()
-a.grid[23].system = System(3)
+a.grid[0].system = System(3)
+a.grid[1].system = System(2)
 print(a)
+print("0:", a.grid[0].neighbors)
+print("1:", a.grid[1].neighbors)

@@ -15,10 +15,10 @@ classDiagram
         -play_round() void
     }
     class Player {
-        -nmae : string
-        -start_player : bool
+        -name : string
         -commands_order :
         %% je sais pas quoi mettre en type
+        -ships : List~Ship~
     }
     class Area {
         -grid
@@ -59,7 +59,8 @@ classDiagram
     Sector <|-- Middle_sector
     Sector <|-- Tri_prime
     Cell o--> "*" System
-    Cell o--> "*" Ship
+%%    Cell o--> "*" Ship
+    Player o--> "15" Ship
 
     class IOhandler {
         -IOmode:Enum~CLI,App~
