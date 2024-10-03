@@ -20,7 +20,7 @@ classDiagram
         -commands_order :
         %% je sais pas quoi mettre en type
     }
-    class Play_area {
+    class Area {
         -grid
         +generate() void
     }
@@ -38,21 +38,22 @@ classDiagram
 
     }
     class System {
-        +get_system() System
+        -level : int
     }
     class Ship {
         -moved : bool
     }
     class Cell {
+        +get_system() System
         +get_number_ship() int
         +get_system() void
         +get_control_player() Player
     }
 
     Game *--> "2..*" Player
-    Game *--> "1" Play_area
+    Game *--> "1" Area
     Main *--> "1" Game
-    Play_area o--> "46" Cell
+    Area o--> "46" Cell
     Sector o--> "1,4,5" Cell
     Sector <|-- Border_sector
     Sector <|-- Middle_sector
