@@ -17,7 +17,23 @@ Ce projet est développé dans le cadre d’un projet de l'UE LO02 à l'UTT.
 - **Jeu complet** : Permet de jouer à Pocket Imperium en version numérique.
 - **Sauvegarde** : Capacité de sauvegarder la progression du jeu pour une reprise ultérieure.
 - **Interface graphique** *(potentielle)* : Si le temps le permet, une interface graphique sera développée pour améliorer l’expérience utilisateur.
+- **Fonctionnalités futures** : Après la finalisation des fonctionnalités principales, plusieurs améliorations peuvent être envisagées pour enrichir l'expérience de jeu. Parmi celles-ci, on peut inclure :
+  - **Multijoueur en ligne** : Permettre à plusieurs joueurs de s'affronter en ligne.
+  - **Intelligence artificielle** : Ajouter des adversaires contrôlés par l'ordinateur pour jouer en solo.
+  - **Extensions de jeu** : Intégrer des extensions ou des variantes de règles pour diversifier les parties.
+  - **Statistiques et classements** : Suivre les performances des joueurs et afficher des classements.
+  - **Personnalisation** : Permettre aux joueurs de personnaliser leurs avatars et leurs vaisseaux.
 
+### Fonctionnalités à implémenter
+- **Interface graphique** *(potentielle)* : Si le temps le permet, une interface graphique sera développée pour améliorer l’expérience utilisateur.
+- **Fonctionnalités futures** : Après la finalisation des fonctionnalités principales, plusieurs améliorations peuvent être envisagées pour enrichir l'expérience de jeu. Parmi celles-ci, on peut inclure :
+    - **Multijoueur en ligne** : Permettre à plusieurs joueurs de s'affronter en ligne.
+    - **Intelligence artificielle** : Ajouter des adversaires contrôlés par l'ordinateur pour jouer en solo.
+    - **Extensions de jeu** : Intégrer des extensions ou des variantes de règles pour diversifier les parties.
+    - **Statistiques et classements** : Suivre les performances des joueurs et afficher des classements.
+    - **Personnalisation** : Permettre aux joueurs de personnaliser leurs avatars et leurs vaisseaux.
+- **Modifications prévues sans devoir coder** :
+    - **Carte personnalisée** : Permettre de créer sa propre carte de jeu. En modifiant le fichier map.properties, on peut modifier la carte (ajouter des obstacles, des tunnels, etc.).
 ---
 
 ### Installation
