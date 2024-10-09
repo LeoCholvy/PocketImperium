@@ -16,7 +16,8 @@ classDiagram
     Data_manipulator <|-- Saves
 
     class Game {
-        +init_game(List~Player~) void
+        +init_game(Player[]) void
+        -current_fleet : Ship[]
         -Phase1() void
         -Phase2() void
         -Phase3() void
@@ -31,7 +32,7 @@ classDiagram
         -name : string
         -commands_order :
         %% je sais pas quoi mettre en type
-        -ships : List~Ship~
+        -ships : Ship[]
         +Expand() void
         +Explore() void
         +Exterminate() void
@@ -47,7 +48,7 @@ classDiagram
         -score_player : Player
     }
     class Border_sector {
-        -used_patterns : List~1~$
+        -used_patterns : List~~$
         +patterns$
         +generate_system(rotate: bool) void
     }
@@ -60,18 +61,19 @@ classDiagram
         +generate_system() void
     }
     class System {
+        -used : bool
         -level : int
     }
     class Ship {
-        -moved : bool
+        -used : bool
         +get_player() Player
     }
     class Cell {
         -id : int
-        -neighbors : List~Cell~
-        +get_system() System
+        -neighbors : Cell[]
+        +get_system() System[]
         +get_number_ship() int
-        +get_system() void
+        +get_ship() Ship[]
         +get_control_player() Player
     }
 
@@ -86,7 +88,7 @@ classDiagram
     Cell "1" *--> "*" System
     Player *--> "15" Ship
     Area *--> "9" Sector
-    Ship "1" o--> "0,1" Cell
+    Ship "1" <--o "0,1" Cell
     Cell "1" o--> "2..*" Cell
 
     class IOhandler {
