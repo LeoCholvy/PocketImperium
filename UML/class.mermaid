@@ -97,18 +97,21 @@ classDiagram
         +expand()*
         +explore()*
         +exterminate()*
+        +score()*
     }
     class CLI {
         +chose_order()
         +expand()
         +explore()
         +exterminate()
+        +score()
     }
     class App {
         +chose_order()
         +expand()
         +explore()
         +exterminate()
+        +score()
     }
     IOhandler <-- CLI : implement
     IOhandler <-- App : implement
