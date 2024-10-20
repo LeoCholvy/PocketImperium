@@ -14,14 +14,16 @@ public class Area {
 
         // set neighbors
         for (int i = 0; i < n; i++) {
-            String[] neighbor_ids = neighbors.getProperty(String.valueOf(i)).split(",");
-            Cell[] neighbor_cells = new Cell[neighbor_ids.length];
-            for (int j = 0; j < neighbor_ids.length; j++) {
-                neighbor_cells[j] = grid[Integer.parseInt(neighbor_ids[j])];
+            String[] neighborIds = neighbors.getProperty(String.valueOf(i)).split(",");
+            Cell[] neighborCells = new Cell[neighborIds.length];
+            for (int j = 0; j < neighborIds.length; j++) {
+                neighborCells[j] = grid[Integer.parseInt(neighborIds[j])];
             }
-            grid[i].setNeighbors(neighbor_cells);
+            grid[i].setNeighbors(neighborCells);
         }
     }
 
-
+    public Cell getCell(int id) {
+        return grid[id];
+    }
 }

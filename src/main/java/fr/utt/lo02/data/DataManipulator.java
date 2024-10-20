@@ -4,7 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-public class Data_manipulator {
+public class DataManipulator {
     // public static void main(String[] args) {
     //     // read and load properties file
     //     Properties properties = new Properties();
@@ -17,8 +17,16 @@ public class Data_manipulator {
     //     // display properties
     //     properties.forEach((key, value) -> System.out.println(key + " : " + value));
     // }
+    private static Properties mapProperties = loadProperties();
+    private static Properties configProperties = loadConfig();
+    public static Properties getMapProperties() {
+        return mapProperties;
+    }
+    public static Properties getConfigProperties() {
+        return configProperties;
+    }
 
-    private static String default_properties =
+    private static String defaultProperties =
             "0=14,15,19,24,21,26,23,28,32,33\n" +
                     "1=2,7\n" +
                     "2=1,3,7,8\n" +
@@ -67,10 +75,10 @@ public class Data_manipulator {
                     "45=39,40,44,46\n" +
                     "46=40,45";
 
-    public static Properties write_default_properties() {
+    private static Properties writeDefaultProperties() {
         String path = "src/ressources/map.properties";
         Properties properties = new Properties();
-        String[] lines = default_properties.split("\n");
+        String[] lines = defaultProperties.split("\n");
         for (String line : lines) {
             String[] parts = line.split("=");
             properties.setProperty(parts[0], parts[1]);
@@ -85,14 +93,14 @@ public class Data_manipulator {
         return properties;
     }
 
-    public static Properties loadProperties() {
+    private static Properties loadProperties() {
         String path = "src/ressources/map.properties";
         Properties properties = new Properties();
         try (FileInputStream input = new FileInputStream(path)) {
             properties.load(input);
         } catch (IOException e) {
             // e.printStackTrace();
-            properties = write_default_properties();
+            properties = writeDefaultProperties();
         }
 
         // check properties integrity
@@ -100,7 +108,7 @@ public class Data_manipulator {
         int n = properties.size();
         for (int i = 0; i < n; i++) {
             if (!properties.containsKey(String.valueOf(i))) {
-                properties = write_default_properties();
+                properties = writeDefaultProperties();
                 break;
             }
         }
@@ -112,7 +120,7 @@ public class Data_manipulator {
                 try {
                     Integer.parseInt(part);
                 } catch (NumberFormatException e) {
-                    properties = write_default_properties();
+                    properties = writeDefaultProperties();
                     break;
                 }
             }
@@ -123,10 +131,28 @@ public class Data_manipulator {
             String[] parts = value.toString().split(",");
             for (String part : parts) {
                 if (part.isEmpty()) {
-                    properties = write_default_properties();
+                    properties = writeDefaultProperties();
                     break;
                 }
             }
+        }
+
+        return properties;
+    }
+
+    private static Properties loadConfig() {
+        Properties properties = new Properties();
+        try (FileInputStream input = new FileInputStream("src/ressources/config.properties")) {
+            properties.load(input);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // check if numberShipsPerPlayer is an integer and if it exists
+        try {
+            Integer.parseInt(properties.getProperty("numberShipsPerPlayer"));
+        } catch (NumberFormatException e) {
+            properties.setProperty("numberShipsPerPlayer", "15");
         }
 
         return properties;

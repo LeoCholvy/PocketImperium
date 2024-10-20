@@ -2,7 +2,7 @@ package fr.utt.lo02.core.components;
 
 public class Cell {
     private final int id;
-    // private System system = null;
+    private System system = null;
     private Cell[] neighbors;
     public Cell(int id) {
         this.id = id;
@@ -15,5 +15,11 @@ public class Cell {
     }
     public void setNeighbors(Cell[] neighbors) {
         this.neighbors = neighbors;
+    }
+    public System getSystem() {
+        return system;
+    }
+    public void setSystem(System system) {
+        this.system = system;
     }
 }

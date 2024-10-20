@@ -31,8 +31,11 @@ classDiagram
     class Player {
         -name : string
         -commands_order :
+        -score : int
         %% je sais pas quoi mettre en type
         -ships : Ship[]
+        -score_sector : Sector
+        -additional_score_sector : Sector
         +Expand() void
         +Explore() void
         +Exterminate() void
@@ -45,7 +48,6 @@ classDiagram
     }
     class Sector {
         -id : int
-        -score_player : Player
     }
     class Border_sector {
         -used_patterns : List~~$
@@ -92,6 +94,7 @@ classDiagram
     Cell "1" o--> "2..*" Cell
 
     class IOhandler {
+        <<abstract>>
         -IOmode:Enum~CLI,App~
         +chose_order()*
         +expand()*
