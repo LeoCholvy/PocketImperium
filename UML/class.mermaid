@@ -90,7 +90,7 @@ classDiagram
     Cell "1" *--> "*" System
     Player *--> "15" Ship
     Area *--> "9" Sector
-    Ship "1" <--o "0,1" Cell
+    Ship "1" o--> "0,1" Cell
     Cell "1" o--> "2..*" Cell
 
     class IOhandler {

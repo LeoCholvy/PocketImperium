@@ -1,22 +1,11 @@
 package fr.utt.lo02.data;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
 public class DataManipulator {
-    // public static void main(String[] args) {
-    //     // read and load properties file
-    //     Properties properties = new Properties();
-    //     try (FileInputStream input = new FileInputStream("src/ressources/map.properties")) {
-    //         properties.load(input);
-    //         // Use properties as needed
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-    //     // display properties
-    //     properties.forEach((key, value) -> System.out.println(key + " : " + value));
-    // }
     private static Properties mapProperties = loadProperties();
     private static Properties configProperties = loadConfig();
     public static Properties getMapProperties() {
@@ -156,5 +145,20 @@ public class DataManipulator {
         }
 
         return properties;
+    }
+
+
+    public static void getSavesList() {
+        // read all files names in saves folder
+        File folder = new File("src/ressources/saves");
+        File[] listOfFiles = folder.listFiles();
+        if (listOfFiles.length == 0) {
+            System.out.println("No saves found");
+        }
+        for (File file : listOfFiles) {
+            if (file.isFile()) {
+                System.out.println(file.getName().split("\\.")[0]);
+            }
+        }
     }
 }

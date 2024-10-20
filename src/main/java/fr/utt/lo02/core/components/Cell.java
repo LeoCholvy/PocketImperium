@@ -1,7 +1,11 @@
 package fr.utt.lo02.core.components;
 
+import com.google.gson.annotations.Expose;
+
 public class Cell {
+    @Expose
     private final int id;
+    @Expose
     private System system = null;
     private Cell[] neighbors;
     public Cell(int id) {

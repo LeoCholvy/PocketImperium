@@ -1,10 +1,14 @@
 package fr.utt.lo02.core.components;
 
+import com.google.gson.annotations.Expose;
+
 public class System {
     private boolean used;
-    private int id;
+    @Expose
+    private final int id;
     private static int idCounter = 0;
-    private int level;
+    @Expose
+    private final int level;
     public System(int level) {
         this.id = idCounter;
         idCounter++;
