@@ -1,6 +1,8 @@
 package fr.utt.lo02.core.components;
 
 import com.google.gson.annotations.Expose;
+import fr.utt.lo02.core.Game;
+import fr.utt.lo02.core.Player;
 
 public class Cell {
     @Expose
@@ -12,18 +14,31 @@ public class Cell {
         this.id = id;
     }
     public int getId() {
-        return id;
+        return this.id;
     }
     public Cell[] getNeighbors() {
-        return neighbors;
+        return this.neighbors;
     }
     public void setNeighbors(Cell[] neighbors) {
         this.neighbors = neighbors;
     }
     public System getSystem() {
-        return system;
+        return this.system;
     }
     public void setSystem(System system) {
         this.system = system;
+    }
+    public boolean isEmpty() {
+        for (Player player : Game.getInstance().getPlayers()) {
+            for (Ship ship : player.getShips()) {
+                if (ship.getCell() == this) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    public boolean isEmptyAndHaveSystem() {
+        return this.isEmpty() && this.system != null;
     }
 }

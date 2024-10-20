@@ -12,13 +12,15 @@ public class Area {
     public Area() {
         Properties neighbors = DataManipulator.getMapProperties();
         int n = neighbors.size();
-        grid = new Cell[n];
+        this.grid = new Cell[n];
         for (int i = 0; i < n; i++) {
             grid[i] = new Cell(i);
         }
 
         // set neighbors
-        setNeighbors();
+        this.setNeighbors();
+
+        // TODO set systems and sectors
     }
 
     public void setNeighbors() {
@@ -30,11 +32,14 @@ public class Area {
             for (int j = 0; j < neighborIds.length; j++) {
                 neighborCells[j] = grid[Integer.parseInt(neighborIds[j])];
             }
-            grid[i].setNeighbors(neighborCells);
+            this.grid[i].setNeighbors(neighborCells);
         }
     }
 
     public Cell getCell(int id) {
         return grid[id];
+    }
+    public Cell[] getGrid() {
+        return grid;
     }
 }

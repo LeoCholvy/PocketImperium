@@ -24,18 +24,39 @@ public class Player {
         this.name = name;
         this.score = 0;
         int nShips = Integer.parseInt(getConfigProperties().getProperty("numberShipsPerPlayer"));
-        ships = new Ship[nShips];
+        this.ships = new Ship[nShips];
         for (int i = 0; i < nShips; i++) {
-            ships[i] = new Ship();
+            this.ships[i] = new Ship();
         }
     }
     public String getName() {
-        return name;
+        return this.name;
     }
     public int getScore() {
-        return score;
+        return this.score;
     }
     public void setScore(int score) {
         this.score = score;
+    }
+    public String toString() {
+        return this.name;
+    }
+    public Ship[] getAvailableShips(int n) {
+        Ship[] availableShips = new Ship[n];
+        int i = 0;
+        while (n > 0 && i < this.ships.length) {
+            if (this.ships[i].isAvailable()) {
+                availableShips[n - 1] = this.ships[i];
+                n--;
+            }
+            i++;
+        }
+        if (n > 0) {
+            return null;
+        }
+        return availableShips;
+    }
+    public Ship[] getShips() {
+        return this.ships;
     }
 }

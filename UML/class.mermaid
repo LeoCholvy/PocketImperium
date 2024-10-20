@@ -2,18 +2,11 @@ classDiagram
     class Main {
         +main() void
     }
-    class Data_manipulator {
+    class DataManipulator {
     }
-    class Config {
-        +load_config() void
+    class GameDataConverter {
+
     }
-    class Saves {
-        +get_saves()
-        +load_save()
-        +write_save()
-    }
-    Data_manipulator <|-- Config
-    Data_manipulator <|-- Saves
 
     class Game {
         +init_game(Player[]) void

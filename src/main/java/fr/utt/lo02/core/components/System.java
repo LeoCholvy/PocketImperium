@@ -14,4 +14,7 @@ public class System {
         idCounter++;
         this.level = level;
     }
+    public int getLevel() {
+        return this.level;
+    }
 }

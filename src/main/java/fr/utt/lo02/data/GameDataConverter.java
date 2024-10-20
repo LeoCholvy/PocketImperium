@@ -13,7 +13,8 @@ public class GameDataConverter {
     }
     public static Game fromJson(String json) {
         Game game = gson.fromJson(json, Game.class);
-        game.setNeighbors();
+        game.initNeighbors();
+        game.initShipsCell();
         return game;
     }
 }
