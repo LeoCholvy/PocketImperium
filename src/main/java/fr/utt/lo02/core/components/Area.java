@@ -3,6 +3,7 @@ package fr.utt.lo02.core.components;
 import com.google.gson.annotations.Expose;
 import fr.utt.lo02.data.DataManipulator;
 
+import java.lang.System;
 import java.util.Properties;
 
 public class Area {
@@ -47,52 +48,57 @@ public class Area {
  * Each sector is assigned a set of cells based on the properties.
  */
 public void setSectors() {
-    // Retrieve sector properties
-    Properties properties = DataManipulator.getSectorProperties();
+    try {
+        // Retrieve sector properties
+        Properties properties = DataManipulator.getSectorProperties();
 
-    // Get the number of each type of sector
-    int nTriPrime = Integer.parseInt(properties.getProperty("numberTriPrimeSector"));
-    int nMiddle = Integer.parseInt(properties.getProperty("numberMiddleSector"));
-    int nBorder = Integer.parseInt(properties.getProperty("numberBorderSector"));
+        // Get the number of each type of sector
+        int nTriPrime = Integer.parseInt(properties.getProperty("numberTriPrimeSector"));
+        int nMiddle = Integer.parseInt(properties.getProperty("numberMiddleSector"));
+        int nBorder = Integer.parseInt(properties.getProperty("numberBorderSector"));
 
-    // Calculate the total number of sectors
-    int nSector = nTriPrime + nMiddle + nBorder;
+        // Calculate the total number of sectors
+        int nSector = nTriPrime + nMiddle + nBorder;
 
-    // Initialize the sectors array
-    this.sectors = new Sector[nSector];
-    int i = 0;
+        // Initialize the sectors array
+        this.sectors = new Sector[nSector];
+        int i = 0;
 
-    // Iterate over each sector definition in the properties
-    for(String strSector : properties.getProperty("Sectors").split(" . ")) {
-        // Split the sector definition into type and cells
-        String[] r = strSector.split(";");
-        String type = r[0];
-        String strCells = r[1];
+        // Iterate over each sector definition in the properties
+        for(String strSector : properties.getProperty("Sectors").split(" . ")) {
+            // Split the sector definition into type and cells
+            String[] r = strSector.split(";");
+            String type = r[0];
+            String strCells = r[1];
 
-        // Determine the number of cells in the sector
-        int nCells = strCells.split(",").length;
-        Cell[] Cells = new Cell[nCells];
+            // Determine the number of cells in the sector
+            int nCells = strCells.split(",").length;
+            Cell[] Cells = new Cell[nCells];
 
-        // Create the appropriate sector type
-        Sector sector;
-        if (type.equals("Border")) {
-            sector = new BorderSector();
-        } else if (type.equals("Middle")) {
-            sector = new MiddleSector();
-        } else {
-            sector = new TriPrimeSector();
+            // Create the appropriate sector type
+            Sector sector;
+            if (type.equals("Border")) {
+                sector = new BorderSector();
+            } else if (type.equals("Middle")) {
+                sector = new MiddleSector();
+            } else {
+                sector = new TriPrimeSector();
+            }
+
+            // Assign cells to the sector
+            Cell[] cells = new Cell[nCells];
+            for (int j = 0; j < nCells; j++) {
+                cells[j] = grid[Integer.parseInt(strCells.split(",")[j])];
+            }
+            sector.setCells(cells);
+
+            // Add the sector to the sectors array
+            this.sectors[i] = sector;
+            i++;
         }
-
-        // Assign cells to the sector
-        Cell[] cells = new Cell[nCells];
-        for (int j = 0; j < nCells; j++) {
-            cells[j] = grid[Integer.parseInt(strCells.split(",")[j])];
-        }
-        sector.setCells(cells);
-
-        // Add the sector to the sectors array
-        this.sectors[i] = sector;
-        i++;
+    } catch (Exception e) {
+        System.out.println("Error in setSectors, the properties file is probably missing or corrupted.");
+        e.printStackTrace();
     }
 }
 
