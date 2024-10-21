@@ -41,38 +41,60 @@ public class Area {
         }
     }
 
-    public void setSectors() {
-        Properties properties = DataManipulator.getSectorProperties();
-        int nTriPrime = Integer.parseInt(properties.getProperty("numberTriPrimeSector"));
-        int nMiddle = Integer.parseInt(properties.getProperty("numberMiddleSector"));
-        int nBorder = Integer.parseInt(properties.getProperty("numberBorderSector"));
-        int nSector = nTriPrime + nMiddle + nBorder;
-        this.sectors = new Sector[nSector];
-        int i = 0;
-        for(String strSector : properties.getProperty("Sectors").split(" . ")) {
-            String[] r = strSector.split(";");
-            String type = r[0];
-            String strCells = r[1];
-            int nCells = strCells.split(",").length;
-            Cell[] Cells = new Cell[nCells];
-            Sector sector;
-            if (type.equals("Border")) {
-                sector = new BorderSector();
-            } else if (type.equals("Middle")) {
-                sector = new MiddleSector();
-            } else {
-                sector = new TriPrimeSector();
-            }
-            Cell[] cells = new Cell[nCells];
-            for (int j = 0; j < nCells; j++) {
-                cells[j] = grid[Integer.parseInt(strCells.split(",")[j])];
-            }
-            sector.setCells(cells);
-            this.sectors[i] = sector;
+/**
+ * Sets the sectors for the area based on properties retrieved from the DataManipulator.
+ * The sectors are categorized into TriPrime, Middle, and Border sectors.
+ * Each sector is assigned a set of cells based on the properties.
+ */
+public void setSectors() {
+    // Retrieve sector properties
+    Properties properties = DataManipulator.getSectorProperties();
 
-            i++;
+    // Get the number of each type of sector
+    int nTriPrime = Integer.parseInt(properties.getProperty("numberTriPrimeSector"));
+    int nMiddle = Integer.parseInt(properties.getProperty("numberMiddleSector"));
+    int nBorder = Integer.parseInt(properties.getProperty("numberBorderSector"));
+
+    // Calculate the total number of sectors
+    int nSector = nTriPrime + nMiddle + nBorder;
+
+    // Initialize the sectors array
+    this.sectors = new Sector[nSector];
+    int i = 0;
+
+    // Iterate over each sector definition in the properties
+    for(String strSector : properties.getProperty("Sectors").split(" . ")) {
+        // Split the sector definition into type and cells
+        String[] r = strSector.split(";");
+        String type = r[0];
+        String strCells = r[1];
+
+        // Determine the number of cells in the sector
+        int nCells = strCells.split(",").length;
+        Cell[] Cells = new Cell[nCells];
+
+        // Create the appropriate sector type
+        Sector sector;
+        if (type.equals("Border")) {
+            sector = new BorderSector();
+        } else if (type.equals("Middle")) {
+            sector = new MiddleSector();
+        } else {
+            sector = new TriPrimeSector();
         }
+
+        // Assign cells to the sector
+        Cell[] cells = new Cell[nCells];
+        for (int j = 0; j < nCells; j++) {
+            cells[j] = grid[Integer.parseInt(strCells.split(",")[j])];
+        }
+        sector.setCells(cells);
+
+        // Add the sector to the sectors array
+        this.sectors[i] = sector;
+        i++;
     }
+}
 
     public void generateSystems() {
         for (Sector sector : sectors) {
