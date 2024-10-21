@@ -8,9 +8,9 @@ classDiagram
         -input : IOHandler
         -instance : Game$
         +init() void
-        -Phase1() void
-        -Phase2() void
-        -Phase3() void
+        +playRound()
+        -phase() void
+        -sustainShips() void
         -score() void
         -playRound() void
         +getInstance() Game
@@ -39,27 +39,24 @@ classDiagram
     Player o--> "0..3" Command
     class Area {
         -grid
-        +neighbors_pattern$
-        +sectors_pattern$
-        +generate() void
+        +setNeighbors() void
+        +getCell(id : int) Cell
     }
     class Sector {
+        <<abstract>>
         -id : int
         -used : bool
         -Cells : Cell[]
+        +generateSystems() void*
     }
-    class Border_sector {
-        -used_patterns : List~~$
-        +patterns$
-        +generate_system(rotate: bool) void
+    class BorderSector {
+        +generateSystems() void
     }
-    class Middle_sector {
-        +patterns$
-        +generate_system() void
-        %% se rotate aléatoirement
+    class MiddleSector {
+        +generateSystem() void
     }
-    class Tri_prime {
-        +generate_system() void
+    class TriPrimeSector {
+        +generateSystem() void
     }
     class System {
         -used : bool
@@ -93,9 +90,9 @@ classDiagram
     Main *--> "1" Game
     Area "1" o--> "46" Cell
     Sector "1" o--> "1,4,5" Cell
-    Sector <|-- Border_sector
-    Sector <|-- Middle_sector
-    Sector <|-- Tri_prime
+    Sector <|-- BorderSector
+    Sector <|-- MiddleSector
+    Sector <|-- TriPrimeSector
     Cell "1" *--> "*" System
     Player *--> "15" Ship
     Area *--> "9" Sector

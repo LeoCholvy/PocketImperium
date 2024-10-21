@@ -31,7 +31,7 @@ public class Cell {
         this.system = system;
     }
     public Ship[] getShips() {
-        List<Ship> ships = List.of();
+        List<Ship> ships = new java.util.ArrayList<>(List.of());
         for (Player player : Game.getInstance().getPlayers()) {
             for (Ship ship : player.getShips()) {
                 if (ship.getCell() == this) {
@@ -46,5 +46,15 @@ public class Cell {
     }
     public boolean isEmpty() {
         return this.getShips().length == 0;
+    }
+
+    public Sector getSector() {
+        Area area = Game.getInstance().getArea();
+        for (Sector sector : area.getSectors()) {
+            if (List.of(sector.getCells()).contains(this)) {
+                return sector;
+            }
+        }
+        return null;
     }
 }

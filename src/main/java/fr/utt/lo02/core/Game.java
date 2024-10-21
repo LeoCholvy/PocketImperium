@@ -4,6 +4,7 @@ import com.google.gson.annotations.Expose;
 import fr.utt.lo02.IO.IOHandler;
 import fr.utt.lo02.core.components.Area;
 import fr.utt.lo02.core.components.Cell;
+import fr.utt.lo02.core.components.Sector;
 import fr.utt.lo02.core.components.Ship;
 
 /**
@@ -58,7 +59,9 @@ public class Game {
     }
 
     public void initSectorsCells() {
-
+        for (Sector sector : this.area.getSectors()) {
+            sector.initCells();
+        }
     }
 
 
@@ -72,6 +75,10 @@ public class Game {
             players_order[i] = this.players[(i + startingPlayerIndex) % n];
             players_order[n * 2 - 1 - i] = this.players[(i + startingPlayerIndex) % n];
         }
+
+        // reset the sectors
+        this.resetSectors();
+
         for (Player currentPlayer : players_order) {
             // choose a cell to place the ships (the function will aslo check their aviablity)
             Cell cell = this.placeTwoShips(currentPlayer);
@@ -83,14 +90,19 @@ public class Game {
         }
     }
 
+    private void resetSectors() {
+        for (Sector sector : this.area.getSectors()) {
+            sector.setUsed(false);
+        }
+    }
+
     public Cell placeTwoShips(Player player) {
         // return this.area.getCell(this.input.placeTwoShips(player));
         Cell cell = this.area.getCell(this.input.placeTwoShips(player));
-        if (!(cell.isEmpty() && cell.getSystem() != null && cell.getSystem().getLevel() == 1)) {
-            this.input.displayError("The Cell must be empty and have a level 1 system");
+        if (!(cell.getSystem() != null && cell.getSystem().getLevel() == 1 && !cell.getSector().isUsed())) {
+            this.input.displayError("The Cell must be in an empty sector and have a level 1 system");
             return placeTwoShips(player);
         }
-        // TODO check sector also
         return cell;
     }
 
@@ -100,5 +112,10 @@ public class Game {
 
     public Area getArea() {
         return this.area;
+    }
+
+    // only meat for GameDataConverter
+    public static void setInstance(Game game) {
+        instance = game;
     }
 }

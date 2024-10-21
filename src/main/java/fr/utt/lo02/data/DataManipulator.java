@@ -1,5 +1,6 @@
 package fr.utt.lo02.data;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -8,6 +9,7 @@ import java.util.Properties;
 public class DataManipulator {
     private static Properties mapProperties = loadMapProperties();
     private static Properties configProperties = loadConfig();
+    private static Properties SectorProperties = loadSectorProperties();
     public static Properties getMapProperties() {
         return mapProperties;
     }
@@ -160,5 +162,39 @@ public class DataManipulator {
         //         System.out.println(file.getName().split("\\.")[0]);
         //     }
         // }
+    }
+
+    public static Properties getSectorProperties() {
+        return SectorProperties;
+    }
+    public static Properties loadSectorProperties() {
+        Properties properties = new Properties();
+        try (FileInputStream input = new FileInputStream("src/ressources/sector.properties")) {
+            properties.load(input);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // check properties integrity
+        // contains numberTriPrimeSector, numberMiddleSector, numberBorderSector
+        if (!properties.containsKey("numberTriPrimeSector")) {
+            properties.setProperty("numberTriPrimeSector", "1");
+        }
+        if (!properties.containsKey("numberMiddleSector")) {
+            properties.setProperty("numberMiddleSector", "2");
+        }
+        if (!properties.containsKey("numberBorderSector")) {
+            properties.setProperty("numberBorderSector", "6");
+        }
+
+        // contains SectorSystemsLevel1, SectorSystemsLevel2
+        if (!properties.containsKey("SectorSystemsLevel1")) {
+            properties.setProperty("SectorSystemsLevel1", "2");
+        }
+        if (!properties.containsKey("SectorSystemsLevel2")) {
+            properties.setProperty("SectorSystemsLevel2", "1");
+        }
+
+        return properties;
     }
 }

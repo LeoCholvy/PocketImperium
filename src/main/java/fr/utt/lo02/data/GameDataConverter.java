@@ -5,7 +5,6 @@ import fr.utt.lo02.core.Game;
 import com.google.gson.GsonBuilder;
 import com.google.gson.Gson;
 
-
 public class GameDataConverter {
     private static Gson gson = new GsonBuilder().setPrettyPrinting().excludeFieldsWithoutExposeAnnotation().create();
     public static String toJson(Game game) {
@@ -13,6 +12,8 @@ public class GameDataConverter {
     }
     public static Game fromJson(String json) {
         Game game = gson.fromJson(json, Game.class);
+        Game.setInstance(game); // VERY IMPORTANT
+        // the following methods need to get the instance of the game from Game.getInstance()
         game.initNeighbors();
         game.initShipsCells();
         game.initSectorsCells();
