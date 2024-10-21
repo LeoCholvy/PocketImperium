@@ -14,7 +14,8 @@ public class GameDataConverter {
     public static Game fromJson(String json) {
         Game game = gson.fromJson(json, Game.class);
         game.initNeighbors();
-        game.initShipsCell();
+        game.initShipsCells();
+        game.initSectorsCells();
         return game;
     }
 }

@@ -2,37 +2,41 @@ classDiagram
     class Main {
         +main() void
     }
-    class DataManipulator {
-    }
-    class GameDataConverter {
-
-    }
 
     class Game {
-        +init_game(Player[]) void
-        -current_fleet : Ship[]
+        -startingPlayerIndex : int
+        -input : IOHandler
+        -instance : Game$
+        +init() void
         -Phase1() void
         -Phase2() void
         -Phase3() void
-        -Phase4() void
-        %% phase 4 pour la phase de score
-        +get_Instance()
-        -instance : Game$
-        -play_round() void
-        -start_player : Player
+        -score() void
+        -playRound() void
+        +getInstance() Game
+        +initNeighbors() void
+        +initShipsCell() void
     }
     class Player {
-        -name : string
-        -commands_order :
+        -idCounter : int$
+        -id : int
+        -name : String
         -score : int
-        %% je sais pas quoi mettre en type
+        -commandsOrder : List~Command~
         -ships : Ship[]
-        -score_sector : Sector
-        -additional_score_sector : Sector
         +Expand() void
         +Explore() void
         +Exterminate() void
+        +score() void
+        +getAvailableShips(n : int) Ship[]
     }
+    class Command{
+        <<enumeration>>
+        EXPAND
+        EXPLORE
+        EXTERMINATE
+    }
+    Player o--> "0..3" Command
     class Area {
         -grid
         +neighbors_pattern$
@@ -41,6 +45,8 @@ classDiagram
     }
     class Sector {
         -id : int
+        -used : bool
+        -Cells : Cell[]
     }
     class Border_sector {
         -used_patterns : List~~$
@@ -57,19 +63,29 @@ classDiagram
     }
     class System {
         -used : bool
+        -id : int
+        -idCounter : int$
         -level : int
     }
     class Ship {
+        -idCounter : int$
         -used : bool
-        +get_player() Player
+        -id : int
+        -cellId : Integer
+        -cell : Cell
+        +getPlayer() Player
+        +initCell() void
+        +isAvailable() bool
+        +getPlayer() Player
     }
     class Cell {
         -id : int
         -neighbors : Cell[]
-        +get_system() System[]
-        +get_number_ship() int
-        +get_ship() Ship[]
-        +get_control_player() Player
+        -system : Sytem
+        +getSystem() System[]
+        +getShips() Ship[]
+        +getControlPlayer() Player
+        +isEmpty() bool
     }
 
     Game *--> "2..*" Player
@@ -86,15 +102,19 @@ classDiagram
     Ship "1" o--> "0,1" Cell
     Cell "1" o--> "2..*" Cell
 
-    class IOhandler {
-        <<abstract>>
-        -IOmode:Enum~CLI,App~
+    class IOHandler {
         +chose_order()*
         +expand()*
         +explore()*
         +exterminate()*
         +score()*
     }
+    class IOMode {
+        <<enumeration>>
+        CLI
+        GUI
+    }
+    IOHandler *--> "1" IOMode
     class CLI {
         +chose_order()
         +expand()
@@ -109,5 +129,26 @@ classDiagram
         +exterminate()
         +score()
     }
-    IOhandler <-- CLI : implement
-    IOhandler <-- App : implement
+    IOHandler --> CLI
+    IOHandler --> App
+
+
+
+    class DataManipulator {
+        -mapProperties : Properties
+        -configProperties : Properties
+        +getMapProperties() Properties
+        +getConfigProperties() Properties
+        -defaultMapProperties : String
+        -writeDefaultProperties() Properties
+        -loadMapProperties() Properties
+        -loadConfig() Properties
+        +getSavesList() String[]
+        +loadSave() Game
+        +writeSave(game : Game) void
+    }
+    class GameDataConverter {
+        +fromJson(json : String) Game
+        +toJson(game : Game) String
+        -gson : Gson
+    }

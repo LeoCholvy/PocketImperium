@@ -4,13 +4,15 @@ import com.google.gson.annotations.Expose;
 import fr.utt.lo02.core.Game;
 import fr.utt.lo02.core.Player;
 
+import java.util.List;
+
 public class Ship {
     private static int idCounter = 0;
     private boolean used;
     @Expose
     private final int id;
     @Expose
-    private int cellId;
+    private Integer cellId;
     private Cell cell;
     public Ship() {
         this.id = idCounter;
@@ -34,7 +36,23 @@ public class Ship {
         return this.cell;
     }
 
+    /**
+     * Initialize the cell of the ship
+     * This method is called after the game is loaded from a json file
+     */
     public void initCell() {
+        if (this.cellId == null) {
+            return;
+        }
         this.cell = Game.getInstance().getArea().getCell(this.cellId);
+    }
+
+    public Player getPlayer() {
+        for (Player player : Game.getInstance().getPlayers()) {
+            if (List.of(player.getShips()).contains(this)) {
+                return player;
+            }
+        }
+        return null;
     }
 }

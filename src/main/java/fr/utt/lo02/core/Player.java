@@ -19,12 +19,15 @@ public class Player {
     @Expose
     private Ship[] ships;
     public Player(String name) {
+        // give an unique id to the player
         this.id = idCounter;
         idCounter++;
         this.name = name;
         this.score = 0;
+        // get the number of ships per player from the config file
         int nShips = Integer.parseInt(getConfigProperties().getProperty("numberShipsPerPlayer"));
         this.ships = new Ship[nShips];
+        // add ships to the player supply
         for (int i = 0; i < nShips; i++) {
             this.ships[i] = new Ship();
         }
@@ -41,6 +44,12 @@ public class Player {
     public String toString() {
         return this.name;
     }
+    /**
+     * Get the available ships of the player
+     * @param n the number of ships to get
+     * @return the available ships
+     * return null if the player doesn't have enough ships
+     */
     public Ship[] getAvailableShips(int n) {
         Ship[] availableShips = new Ship[n];
         int i = 0;

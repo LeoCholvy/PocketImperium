@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class DataManipulator {
-    private static Properties mapProperties = loadProperties();
+    private static Properties mapProperties = loadMapProperties();
     private static Properties configProperties = loadConfig();
     public static Properties getMapProperties() {
         return mapProperties;
@@ -15,7 +15,7 @@ public class DataManipulator {
         return configProperties;
     }
 
-    private static String defaultProperties =
+    private static String defaultMapProperties =
             "0=14,15,19,24,21,26,23,28,32,33\n" +
                     "1=2,7\n" +
                     "2=1,3,7,8\n" +
@@ -67,7 +67,7 @@ public class DataManipulator {
     private static Properties writeDefaultProperties() {
         String path = "src/ressources/map.properties";
         Properties properties = new Properties();
-        String[] lines = defaultProperties.split("\n");
+        String[] lines = defaultMapProperties.split("\n");
         for (String line : lines) {
             String[] parts = line.split("=");
             properties.setProperty(parts[0], parts[1]);
@@ -82,7 +82,7 @@ public class DataManipulator {
         return properties;
     }
 
-    private static Properties loadProperties() {
+    private static Properties loadMapProperties() {
         String path = "src/ressources/map.properties";
         Properties properties = new Properties();
         try (FileInputStream input = new FileInputStream(path)) {
@@ -150,15 +150,15 @@ public class DataManipulator {
 
     public static void getSavesList() {
         // read all files names in saves folder
-        File folder = new File("src/ressources/saves");
-        File[] listOfFiles = folder.listFiles();
-        if (listOfFiles.length == 0) {
-            System.out.println("No saves found");
-        }
-        for (File file : listOfFiles) {
-            if (file.isFile()) {
-                System.out.println(file.getName().split("\\.")[0]);
-            }
-        }
+        // File folder = new File("src/ressources/saves");
+        // File[] listOfFiles = folder.listFiles();
+        // if (listOfFiles.length == 0) {
+        //     System.out.println("No saves found");
+        // }
+        // for (File file : listOfFiles) {
+        //     if (file.isFile()) {
+        //         System.out.println(file.getName().split("\\.")[0]);
+        //     }
+        // }
     }
 }

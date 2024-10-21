@@ -4,6 +4,8 @@ import com.google.gson.annotations.Expose;
 import fr.utt.lo02.core.Game;
 import fr.utt.lo02.core.Player;
 
+import java.util.List;
+
 public class Cell {
     @Expose
     private final int id;
@@ -28,17 +30,21 @@ public class Cell {
     public void setSystem(System system) {
         this.system = system;
     }
-    public boolean isEmpty() {
+    public Ship[] getShips() {
+        List<Ship> ships = List.of();
         for (Player player : Game.getInstance().getPlayers()) {
             for (Ship ship : player.getShips()) {
                 if (ship.getCell() == this) {
-                    return false;
+                    ships.add(ship);
                 }
             }
         }
-        return true;
+        return ships.toArray(new Ship[0]);
     }
-    public boolean isEmptyAndHaveSystem() {
-        return this.isEmpty() && this.system != null;
+    public Player getControlPlayer() {
+        return this.getShips()[0].getPlayer();
+    }
+    public boolean isEmpty() {
+        return this.getShips().length == 0;
     }
 }
