@@ -244,8 +244,6 @@ public class Game {
         return false;
     }
     private boolean phase2(HashMap<Integer, Command[]> orders) {
-        // check orders validity
-
         for (int i = 0; i < 3; i++) {
             HashMap<Player, Command> commands = new HashMap<>();
             for (Player player : this.players) {
