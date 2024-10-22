@@ -3,6 +3,7 @@ package fr.utt.lo02.core.components;
 import com.google.gson.annotations.Expose;
 import fr.utt.lo02.core.Game;
 import fr.utt.lo02.core.Player;
+import fr.utt.lo02.data.GameDataConverter;
 
 import java.util.List;
 
@@ -12,6 +13,7 @@ public class Cell {
     @Expose
     private System system = null;
     private Cell[] neighbors;
+    private boolean used = false;
     public Cell(int id) {
         this.id = id;
     }
@@ -32,7 +34,7 @@ public class Cell {
     }
     public Ship[] getShips() {
         List<Ship> ships = new java.util.ArrayList<>(List.of());
-        for (Player player : Game.getInstance().getPlayers()) {
+        for (Player player : Game.getInstance().getAlivePlayers()) {
             for (Ship ship : player.getShips()) {
                 if (ship.getCell() == this) {
                     ships.add(ship);
@@ -40,9 +42,6 @@ public class Cell {
             }
         }
         return ships.toArray(new Ship[0]);
-    }
-    public Player getControlPlayer() {
-        return this.getShips()[0].getPlayer();
     }
     public boolean isEmpty() {
         return this.getShips().length == 0;
@@ -56,5 +55,22 @@ public class Cell {
             }
         }
         return null;
+    }
+
+    public Player getOwner() {
+        if (this.getShips().length == 0) {
+            return null;
+        }
+        Player owner = this.getShips()[0].getPlayer();
+        // check if no other player has ships on this cell
+        Ship[] ships = this.getShips();
+        for (Ship ship : ships) {
+            if (ship.getPlayer() != owner) {
+                java.lang.System.out.println("State of the game when the error occurred :");
+                java.lang.System.out.println(GameDataConverter.toJson(Game.getInstance()));
+                throw new IllegalStateException("The ships in the same cell must be from the same player");
+            }
+        }
+        return owner;
     }
 }

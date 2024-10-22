@@ -7,15 +7,22 @@ classDiagram
         -startingPlayerIndex : int
         -input : IOHandler
         -instance : Game$
+        -round : int
         +init() void
-        +playRound()
-        -phase() void
-        -sustainShips() void
-        -score() void
-        -playRound() void
+        -phase1() bool
+        -phase2() bool
+        -phase3() bool
+        -endGame() void
+        +playRound() bool
         +getInstance() Game
+        +getPlayer(id : int) Player
         +initNeighbors() void
         +initShipsCell() void
+        +initSectorsCells() void
+        +playGame() void
+        +getAlivePlayer() Player[]
+        -cyclePlayers(n : int) Player
+        -cycleStartingPlayer() void
     }
     class Player {
         -idCounter : int$
@@ -24,6 +31,7 @@ classDiagram
         -score : int
         -commandsOrder : List~Command~
         -ships : Ship[]
+        -dead : bool
         +Expand() void
         +Explore() void
         +Exterminate() void
@@ -83,6 +91,7 @@ classDiagram
         +getShips() Ship[]
         +getControlPlayer() Player
         +isEmpty() bool
+        +isNeighbor(cell : Cell) bool
     }
 
     Game *--> "2..*" Player
@@ -100,37 +109,32 @@ classDiagram
     Cell "1" o--> "2..*" Cell
 
     class IOHandler {
-        +chose_order()*
-        +expand()*
-        +explore()*
-        +exterminate()*
-        +score()*
+        -mode : IOMode
+        +displayError(message : String) void
+        +getStartingCellId() int
+        +getCommandOrders() HashMap~Integer, Command[]~
+        +expand(playerId : int, nShips : int) int[][]
+        %% [[CellId, nShips], ...]
+        +explore(playerId : int, nFleets : int) int[][]
+        %% [[CellId, ship1Id, ship2Id, ...], ...]
+        +exterminate(playerId : int, nSystems : int) int[][]
+        %% [[SystemId, ship1Id, ship2Id, ...], ...]
+        +score(playerId : int) int
     }
     class IOMode {
         <<enumeration>>
         CLI
         GUI
+        SERVER
     }
     IOHandler *--> "1" IOMode
-    class CLI {
-        +chose_order()
-        +expand()
-        +explore()
-        +exterminate()
-        +score()
+
+
+    class GameDataConverter {
+        +fromJson(json : String) Game
+        +toJson(game : Game) String
+        -gson : Gson
     }
-    class App {
-        +chose_order()
-        +expand()
-        +explore()
-        +exterminate()
-        +score()
-    }
-    IOHandler --> CLI
-    IOHandler --> App
-
-
-
     class DataManipulator {
         -mapProperties : Properties
         -configProperties : Properties
@@ -144,8 +148,24 @@ classDiagram
         +loadSave() Game
         +writeSave(game : Game) void
     }
-    class GameDataConverter {
-        +fromJson(json : String) Game
-        +toJson(game : Game) String
-        -gson : Gson
-    }
+    Main ..> DataManipulator
+    Main "1" -- "1" IOHandler
+    Game "1" -- "1" IOHandler
+    DataManipulator ..> GameDataConverter
+
+
+%%    %% pas sur de laisser ces fleches
+%%    class CLI {
+%%        }
+%%    class GUI {
+%%        }
+%%    IOHandler --> CLI
+%%    IOHandler --> GUI
+%%    class Server {
+%%
+%%    }
+%%    class ServerClientInterface {
+%%
+%%    }
+%%    IOHandler --> Server
+%%    ServerClientInterface <-- Server : implements

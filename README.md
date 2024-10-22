@@ -14,6 +14,7 @@ Ce projet est développé dans le cadre d’un projet de l'UE LO02 à l'UTT.
 ---
 
 ### Fonctionnalités principales
+ATTENTION : EXEMPLE:
 - **Jeu complet** : Permet de jouer à Pocket Imperium en version numérique.
 - **Sauvegarde** : Capacité de sauvegarder la progression du jeu pour une reprise ultérieure.
 - **Interface graphique** *(potentielle)* : Si le temps le permet, une interface graphique sera développée pour améliorer l’expérience utilisateur.
@@ -25,6 +26,13 @@ Ce projet est développé dans le cadre d’un projet de l'UE LO02 à l'UTT.
   - **Personnalisation** : Permettre aux joueurs de personnaliser leurs avatars et leurs vaisseaux.
 
 ### Fonctionnalités à implémenter
+- **historique** : Statistiques des parties précédentes, historique de partie et des parties
+  - **visualisation** : Visualisation des parties précédentes et graphiques
+  - **classement** : Classement des joueurs
+  - **annulation** : Pouvoir revenir en arrière dans une partie
+- **configuration** : Configuration de la partie
+  - **règles** : choisir l'ordre de priorité des actions
+ATTENTION : EXEMPLE
 - **Interface graphique** *(potentielle)* : Si le temps le permet, une interface graphique sera développée pour améliorer l’expérience utilisateur.
 - **Fonctionnalités futures** : Après la finalisation des fonctionnalités principales, plusieurs améliorations peuvent être envisagées pour enrichir l'expérience de jeu. Parmi celles-ci, on peut inclure :
     - **Multijoueur en ligne** : Permettre à plusieurs joueurs de s'affronter en ligne.
@@ -55,6 +63,13 @@ Aucune bibliothèque spécifique n'est encore utilisée pour ce projet. Cela peu
 ### Organisation du Code Source
 
 Le projet est actuellement en phase de conception, donc la structure du code source n'est pas encore finalisée. Une fois le développement en cours, cette section sera mise à jour pour inclure la description des principaux répertoires et fichiers.
+
+---
+
+### Inputs du jeu
+Lorsque le jeu a besoin d'un input, il utilise les méthodes de la classe IOHandler.
+
+En fonction du mode d'entrée choisi, IOHandler appelle les méthodes de la bonne classe (CLI, GUI, etc).
 
 ---
 

@@ -30,7 +30,11 @@ public class Ship {
     }
     public void setCell(Cell cell) {
         this.cell = cell;
-        this.cellId = cell.getId();
+        if (cell != null) {
+            this.cellId = cell.getId();
+        } else {
+            this.cellId = null;
+        }
     }
     public Cell getCell() {
         return this.cell;
@@ -48,7 +52,7 @@ public class Ship {
     }
 
     public Player getPlayer() {
-        for (Player player : Game.getInstance().getPlayers()) {
+        for (Player player : Game.getInstance().getAlivePlayers()) {
             if (List.of(player.getShips()).contains(this)) {
                 return player;
             }
