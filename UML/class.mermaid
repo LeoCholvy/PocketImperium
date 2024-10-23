@@ -9,7 +9,9 @@ classDiagram
         -instance : Game$
         -round : int
         +init() void
+        -placeTwoShip() Cell
         -phase1() bool
+        -microPhase2() bool
         -phase2() bool
         -phase3() bool
         -endGame() void
@@ -54,7 +56,8 @@ classDiagram
         <<abstract>>
         -id : int
         -used : bool
-        -Cells : Cell[]
+        -cells : Cell[]
+        -cellIds : int[]
         +generateSystems() void*
     }
     class BorderSector {
@@ -76,7 +79,7 @@ classDiagram
         -idCounter : int$
         -used : bool
         -id : int
-        -cellId : Integer
+        -cellIds : Integer
         -cell : Cell
         +getPlayer() Player
         +initCell() void
