@@ -9,13 +9,13 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class CLI {
-    public static void displayGameState() {
+public class CLI implements IOHandler {
+    public void displayGameState() {
         System.out.println("-----------------------------------------------------------");
         System.out.println(GameDataConverter.toJson(Game.getInstance()));
         System.out.println("-----------------------------------------------------------");
     }
-    public static int getStartingCellId(int playerid) {
+    public int getStartingCellId(int playerid) {
         Player player = Game.getInstance().getPlayer(playerid);
         displayGameState();
         System.out.println("Player " + player.getName() + ", chose a cell to place your ship");
@@ -29,11 +29,11 @@ public class CLI {
             return getStartingCellId(playerid);
         }
     }
-    public static void displayError(String message) {
+    public void displayError(String message) {
         System.out.println("Error: " + message);
     }
 
-    public static HashMap<Integer, Command[]> getCommandOrders() {
+    public HashMap<Integer, Command[]> getCommandOrders() {
         HashMap<Integer, Command[]> orders = new HashMap<>();
         // ask each player their order
         for (Player player : Game.getInstance().getAlivePlayers()) {
@@ -70,7 +70,7 @@ public class CLI {
         return orders;
     }
 
-    public static int[][] expand(int playerId, int nShips) {
+    public int[][] expand(int playerId, int nShips) {
         ArrayList<int[]> ships = new ArrayList<>();
         Player player = Game.getInstance().getPlayer(playerId);
         // displayGameState();
@@ -115,17 +115,17 @@ public class CLI {
         return ships.toArray(new int[0][0]);
     }
 
-    public static int[][] explore(int playerId, int nFleet) {
+    public int[][] explore(int playerId, int nFleet) {
         // TODO : INPUT : explore
         return new int[0][0];
     }
 
-    public static int[][] exterminate(int playerId, int nFleet) {
+    public int[][] exterminate(int playerId, int nFleet) {
         // TODO : INPUT : exterminate
         return new int[0][0];
     }
 
-    public static int score(int id) {
+    public int score(int id) {
         return 0;
     }
 }

@@ -1,5 +1,6 @@
 package fr.utt.lo02;
 
+import fr.utt.lo02.IO.CLI;
 import fr.utt.lo02.IO.IOMode;
 import fr.utt.lo02.IO.IOHandler;
 import fr.utt.lo02.core.Game;
@@ -15,11 +16,10 @@ public class Main {
     public static void main(String[] args) {
         IOHandler io;
         if (args[0].equals("CLI")) {
-            io = new IOHandler(IOMode.CLI);
-        } else if (args[0].equals("GUI")) {
-            io = new IOHandler(IOMode.GUI);
+            io = new CLI();
         } else {
-            io = new IOHandler(IOMode.GUI);
+            // CHANGE IT
+            io = new CLI();
         }
 
         // DEBUG MODE
