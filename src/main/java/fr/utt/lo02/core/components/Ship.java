@@ -12,7 +12,7 @@ public class Ship {
     @Expose
     private final int id;
     @Expose
-    private Integer cellIds;
+    private Integer cellId;
     private Cell cell;
     public Ship() {
         this.id = idCounter;
@@ -31,9 +31,9 @@ public class Ship {
     public void setCell(Cell cell) {
         this.cell = cell;
         if (cell != null) {
-            this.cellIds = cell.getId();
+            this.cellId = cell.getId();
         } else {
-            this.cellIds = null;
+            this.cellId = null;
         }
     }
     public Cell getCell() {
@@ -45,10 +45,10 @@ public class Ship {
      * This method is called after the game is loaded from a json file
      */
     public void initCell() {
-        if (this.cellIds == null) {
+        if (this.cellId == null) {
             return;
         }
-        this.cell = Game.getInstance().getArea().getCell(this.cellIds);
+        this.cell = Game.getInstance().getArea().getCell(this.cellId);
     }
 
     public Player getPlayer() {

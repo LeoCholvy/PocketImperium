@@ -137,7 +137,12 @@ public class Game {
 
     public Cell placeTwoShips(Player player) {
         // return this.area.getCell(this.input.placeTwoShips(player));
-        Cell cell = this.area.getCell(this.input.getStartingCellId(player.getId()));
+        int input = this.input.getStartingCellId(player.getId());
+        if (!(input >= 0 && input < this.area.getGrid().length)) {
+            this.input.displayError("The cell id must be between 0 and " + (this.area.getGrid().length - 1));
+            return placeTwoShips(player);
+        }
+        Cell cell = this.area.getCell(input);
         if (!(cell.getSystem() != null && cell.getSystem().getLevel() == 1 && !cell.getSector().isUsed())) {
             this.input.displayError("The Cell must be in an empty sector and have a level 1 system");
             return placeTwoShips(player);
