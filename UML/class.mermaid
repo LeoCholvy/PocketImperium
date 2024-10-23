@@ -46,7 +46,7 @@ classDiagram
         EXPLORE
         EXTERMINATE
     }
-    Player o--> "0..3" Command
+    Player ..> Command
     class Area {
         -grid
         +setNeighbors() void
@@ -112,63 +112,59 @@ classDiagram
     Cell "1" o--> "2..*" Cell
 
     class IOHandler {
-        -mode : IOMode
+        <<interface>>
+        +displayError(message : String) void*
+        +getStartingCellId() int*
+        +getCommandOrders() HashMap~Integer, Command[]~*
+        +expand(playerId : int, nShips : int) int[][]*
+        %% [[CellId, nShips], ...]
+        +explore(playerId : int, nFleets : int) int[][]*
+        %% [[CellId, ship1Id, ship2Id, ...], ...]
+        +exterminate(playerId : int, nSystems : int) int[][]*
+        %% [[SystemId, ship1Id, ship2Id, ...], ...]
+        +score(playerId : int) int*
+    }
+
+
+    class GameDataConverter {
+        +fromJson(json : String) Game$
+        +toJson(game : Game) String$
+        -gson : Gson$
+    }
+    class DataManipulator {
+        -mapProperties : Properties$
+        -configProperties : Properties$
+        +getMapProperties() Properties$
+        +getConfigProperties() Properties$
+        -defaultMapProperties : String$
+        -writeDefaultProperties() Properties$
+        -loadMapProperties() Properties$
+        -loadConfig() Properties$
+        +getSavesList() String[]$
+        +loadSave() Game$
+        +writeSave(game : Game) void$
+    }
+    class CLI {
         +displayError(message : String) void
         +getStartingCellId() int
         +getCommandOrders() HashMap~Integer, Command[]~
         +expand(playerId : int, nShips : int) int[][]
-        %% [[CellId, nShips], ...]
         +explore(playerId : int, nFleets : int) int[][]
-        %% [[CellId, ship1Id, ship2Id, ...], ...]
         +exterminate(playerId : int, nSystems : int) int[][]
-        %% [[SystemId, ship1Id, ship2Id, ...], ...]
         +score(playerId : int) int
     }
-    class IOMode {
-        <<enumeration>>
-        CLI
-        GUI
-        SERVER
+    class GUI {
+        +displayError(message : String) void
+        +getStartingCellId() int
+        +getCommandOrders() HashMap~Integer, Command[]~
+        +expand(playerId : int, nShips : int) int[][]
+        +explore(playerId : int, nFleets : int) int[][]
+        +exterminate(playerId : int, nSystems : int) int[][]
+        +score(playerId : int) int
     }
-    IOHandler *--> "1" IOMode
-
-
-    class GameDataConverter {
-        +fromJson(json : String) Game
-        +toJson(game : Game) String
-        -gson : Gson
-    }
-    class DataManipulator {
-        -mapProperties : Properties
-        -configProperties : Properties
-        +getMapProperties() Properties
-        +getConfigProperties() Properties
-        -defaultMapProperties : String
-        -writeDefaultProperties() Properties
-        -loadMapProperties() Properties
-        -loadConfig() Properties
-        +getSavesList() String[]
-        +loadSave() Game
-        +writeSave(game : Game) void
-    }
+    Game *--> "1" IOHandler
     Main ..> DataManipulator
-    Main "1" -- "1" IOHandler
-    Game "1" -- "1" IOHandler
     DataManipulator ..> GameDataConverter
-
-
-%%    %% pas sur de laisser ces fleches
-%%    class CLI {
-%%        }
-%%    class GUI {
-%%        }
-%%    IOHandler --> CLI
-%%    IOHandler --> GUI
-%%    class Server {
-%%
-%%    }
-%%    class ServerClientInterface {
-%%
-%%    }
-%%    IOHandler --> Server
-%%    ServerClientInterface <-- Server : implements
+    IOHandler ..> GameDataConverter
+    CLI --> IOHandler : implements
+    GUI --> IOHandler : implements
