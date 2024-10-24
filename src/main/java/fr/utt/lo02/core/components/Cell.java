@@ -17,6 +17,7 @@ public class Cell {
     public Cell(int id) {
         this.id = id;
     }
+    // private int[] neighborIds;
     public int getId() {
         return this.id;
     }
