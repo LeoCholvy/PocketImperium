@@ -74,4 +74,8 @@ public class Cell {
         }
         return owner;
     }
+
+    public void initNeighbors() {
+        // FIXME : implementer la méthode
+    }
 }

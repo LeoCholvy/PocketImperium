@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 public class Main {
+    public static Game game;
     public static void main(String[] args) {
         IOHandler io = new CLI();
 

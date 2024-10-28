@@ -30,6 +30,7 @@ public class Area {
     }
 
     public void setNeighbors() {
+        // FIXME: générer neighborsIds et pas neighbors ET ENSUITE appeller initNeighbors de chaque cellules
         Properties neighbors = DataManipulator.getMapProperties();
         int n = neighbors.size();
         for (int i = 0; i < n; i++) {

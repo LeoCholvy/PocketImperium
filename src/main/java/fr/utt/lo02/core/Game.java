@@ -224,19 +224,20 @@ public class Game {
         for (int i = 0; i < n; i++) {
             Player player = this.cyclePlayers(i);
             if (commands.get(player) == Command.EXPAND) {
-                player.expand(4-l);
+                player.expand(4 - l);
             }
         }
-        //2. Explore
+        // 2. Explore
         l = (int) Stream.of(commands.values().toArray()).filter(command -> command == Command.EXPLORE).count();
         for (int i = 0; i < n; i++) {
             Player player = this.cyclePlayers(i);
             if (commands.get(player) == Command.EXPLORE) {
-                player.explore(4-l);
+                player.explore(4 - l);
             }
         }
-        //3. Exterminate
+        // 3. Exterminate
         l = (int) Stream.of(commands.values().toArray()).filter(command -> command == Command.EXTERMINATE).count();
+        // FIXME : generate the order of the players and check alive
         for (int i = 0; i < n; i++) {
             Player player = this.cyclePlayers(i);
             if (commands.get(player) == Command.EXTERMINATE) {
