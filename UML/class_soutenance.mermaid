@@ -25,7 +25,7 @@ classDiagram
         -cycleStartingPlayer() void
     }
     class Player {
-        -input : IOHandler
+        -input : PlayerInput
         -id : int
         -name : String
         -score : int
@@ -38,13 +38,7 @@ classDiagram
         +score() void
         +getAvailableShips(n : int) Ship[]
     }
-    class Command{
-        <<enumeration>>
-        EXPAND
-        EXPLORE
-        EXTERMINATE
-    }
-    Player ..> Command
+
     class Area {
         -grid
         +setNeighbors() void
@@ -108,3 +102,75 @@ classDiagram
     Ship "1" o--> "0,1" Cell
     Cell "1" o--> "2..*" Cell
 
+    class IOHandler {
+        <<interface>>
+        +displayError(message : String) void*
+        +getStartingCellId() int*
+        +getCommandOrders() HashMap~Integer, Command[]~*
+        +expand(playerId : int, nShips : int) int[][]*
+        %% [[CellId, nShips], ...]
+        +explore(playerId : int, nFleets : int) int[][]*
+        %% [[CellId, ship1Id, ship2Id, ...], ...]
+        +exterminate(playerId : int, nSystems : int) int[][]*
+        %% [[SystemId, ship1Id, ship2Id, ...], ...]
+        +score(playerId : int) int*
+    }
+    class IA {
+        <<abstract>>
+        +displayError(message : String) void*
+        +getStartingCellId() int*
+        +getCommandOrders() HashMap~Integer, Command[]~*
+        +expand(playerId : int, nShips : int) int[][]*
+        +explore(playerId : int, nFleets : int) int[][]*
+        +exterminate(playerId : int, nSystems : int) int[][]*
+        +score(playerId : int) int*
+    }
+    class CLI {
+        +displayError(message : String) void
+        +getStartingCellId() int
+        +getCommandOrders() HashMap~Integer, Command[]~
+        +expand(playerId : int, nShips : int) int[][]
+        +explore(playerId : int, nFleets : int) int[][]
+        +exterminate(playerId : int, nSystems : int) int[][]
+        +score(playerId : int) int
+    }
+    class GUI {
+        +displayError(message : String) void
+        +getStartingCellId() int
+        +getCommandOrders() HashMap~Integer, Command[]~
+        +expand(playerId : int, nShips : int) int[][]
+        +explore(playerId : int, nFleets : int) int[][]
+        +exterminate(playerId : int, nSystems : int) int[][]
+        +score(playerId : int) int
+    }
+    class IAEasy {
+        +displayError(message : String) void
+        +getStartingCellId() int
+        +getCommandOrders() HashMap~Integer, Command[]~
+        +expand(playerId : int, nShips : int) int[][]
+        +explore(playerId : int, nFleets : int) int[][]
+        +exterminate(playerId : int, nSystems : int) int[][]
+        +score(playerId : int) int
+    }
+    class IAHard {
+        +displayError(message : String) void
+        +getStartingCellId() int
+        +getCommandOrders() HashMap~Integer, Command[]~
+        +expand(playerId : int, nShips : int) int[][]
+        +explore(playerId : int, nFleets : int) int[][]
+        +exterminate(playerId : int, nSystems : int) int[][]
+        +score(playerId : int) int
+    }
+    class Command{
+        <<enumeration>>
+        EXPAND
+        EXPLORE
+        EXTERMINATE
+    }
+    Player ..> Command
+    Player "1" *--> "1" IOHandler
+    IOHandler <-- IA  :implements
+    IOHandler <-- CLI :implements
+    IOHandler <-- GUI :implements
+    IA <|-- IAEasy
+    IA <|-- IAHard
