@@ -116,14 +116,7 @@ classDiagram
         +score(playerId : int) int*
     }
     class IA {
-        <<abstract>>
-        +displayError(message : String) void*
-        +getStartingCellId() int*
-        +getCommandOrders() HashMap~Integer, Command[]~*
-        +expand(playerId : int, nShips : int) int[][]*
-        +explore(playerId : int, nFleets : int) int[][]*
-        +exterminate(playerId : int, nSystems : int) int[][]*
-        +score(playerId : int) int*
+        <<interface>>
     }
     class CLI {
         +displayError(message : String) void
@@ -169,7 +162,7 @@ classDiagram
     }
     Player ..> Command
     Player "1" *--> "1" IOHandler
-    IOHandler <-- IA  :implements
+    IOHandler <|-- IA
     IOHandler <-- CLI :implements
     IOHandler <-- GUI :implements
     IA <|-- IAEasy
