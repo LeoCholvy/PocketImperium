@@ -10,8 +10,8 @@ import java.util.HashMap;
 import java.util.stream.Stream;
 
 /**
- * The class is the core of the game
- * Only one instance of the game can be created
+ * The class is the core of the game.
+ * Only one instance of the game can be created.
  */
 public class Game {
     @Expose
@@ -25,6 +25,12 @@ public class Game {
     @Expose
     private int round = 0;
 
+    /**
+     * Constructor for the Game class.
+     * @param input the IOHandler for input operations
+     * @param players the array of players in the game
+     * @throws IllegalStateException if an instance of the game already exists
+     */
     public Game(IOHandler input, Player[] players) {
         if (instance != null) {
             throw new IllegalStateException("Game already created");
@@ -34,8 +40,9 @@ public class Game {
         this.input = input;
         instance = this;
     }
+
     /**
-     * Get the instance of the game
+     * Get the instance of the game.
      * @return the instance of the game
      */
     public static Game getInstance() {
@@ -43,16 +50,16 @@ public class Game {
     }
 
     /**
-     * Initialize the neighbors of each area
-     * Only call this method when recreating the game from json data
+     * Initialize the neighbors of each area.
+     * Only call this method when recreating the game from JSON data.
      */
     public void initNeighbors() {
         this.area.setNeighbors();
     }
 
     /**
-     * Initialize the ships cell
-     * Only call this method when recreating the game from json data
+     * Initialize the ships' cells.
+     * Only call this method when recreating the game from JSON data.
      */
     public void initShipsCells() {
         // assign the cell to the ships with its id
@@ -63,13 +70,21 @@ public class Game {
         }
     }
 
+    /**
+     * Initialize the cells of each sector.
+     */
     public void initSectorsCells() {
         for (Sector sector : this.area.getSectors()) {
             sector.initCells();
         }
     }
 
-    // this two methods are useful when 1 player is dead
+    /**
+     * Cycle through players to find the next player.
+     * @param n the number of players to cycle through
+     * @return the next player
+     * @throws IllegalStateException if no player is found
+     */
     private Player cyclePlayers(int n) {
         if (n == 0) {
             return this.players[this.startingPlayerIndex];
@@ -87,6 +102,10 @@ public class Game {
         }
         throw new IllegalStateException("No player found");
     }
+
+    /**
+     * Cycle to the next starting player.
+     */
     private void cycleStartingPlayer() {
         // we assume there is at least 2 players
         int n = this.players.length;
@@ -102,6 +121,10 @@ public class Game {
         }
     }
 
+    /**
+     * Initialize the game.
+     * Chooses the starting player randomly and resets the sectors.
+     */
     public void init() {
         // chose the starting player randomly
         // we assume no player is dead
@@ -129,12 +152,20 @@ public class Game {
         }
     }
 
+    /**
+     * Reset the sectors to their initial state.
+     */
     private void resetSectors() {
         for (Sector sector : this.area.getSectors()) {
             sector.setUsed(false);
         }
     }
 
+    /**
+     * Place two ships for a player.
+     * @param player the player placing the ships
+     * @return the cell where the ships are placed
+     */
     public Cell placeTwoShips(Player player) {
         // return this.area.getCell(this.input.placeTwoShips(player));
         int input = this.input.getStartingCellId(player.getId());
@@ -150,6 +181,10 @@ public class Game {
         return cell;
     }
 
+    /**
+     * Get the alive players.
+     * @return an array of alive players
+     */
     public Player[] getAlivePlayers() {
         // return this.players;
         // only return alive players
@@ -170,15 +205,28 @@ public class Game {
         return alivePlayers;
     }
 
+    /**
+     * Get the area of the game.
+     * @return the area of the game
+     */
     public Area getArea() {
         return this.area;
     }
 
-    // only meat for GameDataConverter
+    /**
+     * Set the instance of the game.
+     * Only meant for GameDataConverter.
+     * @param game the game instance to set
+     */
     public static void setInstance(Game game) {
         instance = game;
     }
 
+    /**
+     * Get a player by their ID.
+     * @param playerId the ID of the player
+     * @return the player with the given ID, or null if not found
+     */
     public Player getPlayer(int playerId) {
         for (Player player : this.players) {
             if (player.getId() == playerId) {
@@ -188,6 +236,10 @@ public class Game {
         return null;
     }
 
+    /**
+     * Phase 1 of the game.
+     * @return a map of player IDs to their commands
+     */
     private HashMap<Integer, Command[]> phase1() {
         HashMap<Integer, Command[]> orders = this.input.getCommandOrders();
         // check if the orders are valid
@@ -212,7 +264,13 @@ public class Game {
         }
         return orders;
     }
-    private boolean microPhase2(HashMap<Player,Command> commands) {
+
+    /**
+     * Micro phase 2 of the game.
+     * @param commands a map of players to their commands
+     * @return false if the game should continue, true if it should end
+     */
+    private boolean microPhase2(HashMap<Player, Command> commands) {
         // priority Expand then Explore the Exterminate
         // we start from the starting player
         int p = this.startingPlayerIndex;
@@ -249,6 +307,12 @@ public class Game {
 
         return false;
     }
+
+    /**
+     * Phase 2 of the game.
+     * @param orders a map of player IDs to their commands
+     * @return true if the game should end, false otherwise
+     */
     private boolean phase2(HashMap<Integer, Command[]> orders) {
         for (int i = 0; i < 3; i++) {
             HashMap<Player, Command> commands = new HashMap<>();
@@ -262,6 +326,11 @@ public class Game {
 
         return false;
     }
+
+    /**
+     * Phase 3 of the game.
+     * Sustains ships and scores sectors.
+     */
     private void phase3() {
         // sustain ships
         for (Cell cell : this.getArea().getGrid()) {
@@ -296,6 +365,11 @@ public class Game {
         }
         // if
     }
+
+    /**
+     * Play a round of the game.
+     * @return true if the game should end, false otherwise
+     */
     public boolean playRound() {
         this.round++;
         HashMap<Integer, Command[]> orders = this.phase1();
@@ -310,13 +384,27 @@ public class Game {
 
         return false;
     }
+
+    /**
+     * Play the game.
+     * @return false
+     */
     public boolean playGame() {
         return false;
     }
+
+    /**
+     * Get the input handler.
+     * @return the input handler
+     */
     public IOHandler getInput() {
         return this.input;
     }
 
+    /**
+     * Initialize the IO handler.
+     * @param io the IO handler to initialize
+     */
     public void initIO(IOHandler io) {
         this.input = io;
     }

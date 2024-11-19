@@ -23,6 +23,11 @@ public class Player {
     private Ship[] ships;
     @Expose
     private boolean dead = false;
+
+    /**
+     * Constructor for the Player class.
+     * @param name the name of the player
+     */
     public Player(String name) {
         // give an unique id to the player
         this.id = idCounter;
@@ -37,23 +42,43 @@ public class Player {
             this.ships[i] = new Ship();
         }
     }
+
+    /**
+     * Get the name of the player.
+     * @return the name of the player
+     */
     public String getName() {
         return this.name;
     }
+
+    /**
+     * Get the score of the player.
+     * @return the score of the player
+     */
     public int getScore() {
         return this.score;
     }
+
+    /**
+     * Set the score of the player.
+     * @param score the new score of the player
+     */
     public void setScore(int score) {
         this.score = score;
     }
+
+    /**
+     * Get a string representation of the player.
+     * @return the name of the player
+     */
     public String toString() {
         return this.name;
     }
+
     /**
-     * Get the available ships of the player
+     * Get the available ships of the player.
      * @param n the number of ships to get
-     * @return the available ships
-     * return null if the player doesn't have enough ships
+     * @return the available ships, or null if the player doesn't have enough ships
      */
     public Ship[] getAvailableShips(int n) {
         Ship[] availableShips = new Ship[n];
@@ -71,26 +96,52 @@ public class Player {
         }
         return availableShips;
     }
+
+    /**
+     * Get all ships of the player.
+     * @return an array of all ships
+     */
     public Ship[] getShips() {
         return this.ships;
     }
+
+    /**
+     * Get the ID of the player.
+     * @return the ID of the player
+     */
     public int getId() {
         return this.id;
     }
 
+    /**
+     * Check if the player is dead.
+     * @return true if the player is dead, false otherwise
+     */
     public boolean isDead() {
         return dead;
     }
+
+    /**
+     * Set the player's dead status.
+     * @param dead the new dead status
+     */
     public void setDead(boolean dead) {
         this.dead = dead;
     }
 
+    /**
+     * Score the player based on the sector ID.
+     */
     public void score () {
         int SectorId = Game.getInstance().getInput().score(this.getId());
         // TODO : check if the input is valid
         // TODO : score the player
     }
 
+    /**
+     * Expand the player's ships.
+     * @param nShips the number of ships to expand
+     */
     public void expand(int nShips) {
         int[][] input = Game.getInstance().getInput().expand(this.getId(), nShips);
         // should be array of [cellId, nShips]
@@ -128,11 +179,19 @@ public class Player {
         // TODO : expand
     }
 
+    /**
+     * Explore with the player's fleet.
+     * @param nFleet the number of fleets to explore with
+     */
     public void explore(int nFleet) {
         // TODO : check if the input is valid
         // TODO : explore
     }
 
+    /**
+     * Exterminate a system with the player's fleet.
+     * @param nSystem the number of systems to exterminate
+     */
     public void exterminate(int nSystem) {
         // TODO : check if the input is valid
         // TODO : exterminate
@@ -141,6 +200,10 @@ public class Player {
             // if all are dead : end the game
     }
 
+    /**
+     * Get the number of available ships.
+     * @return the number of available ships
+     */
     public int getNumberAvailableShips() {
         return (int) Arrays.stream(this.ships).filter(Ship::isAvailable).count();
     }
