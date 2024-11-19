@@ -90,22 +90,41 @@ public class Cell {
         return owner;
     }
 
-public Integer distance(Cell cell, int reccursionDepth) {
-    if (reccursionDepth == 0) {
-        return null;
+    public Integer distance(Cell cell, int reccursionDepth) {
+        if (reccursionDepth == 0) {
+            return null;
+        }
+        if (this == cell) {
+            return 0;
+        }
+        Integer minDistance = null;
+        for (Cell neighbor : this.getNeighbors()) {
+            Integer distance = neighbor.distance(cell, reccursionDepth - 1);
+            if (distance != null) {
+                if (minDistance == null || distance < minDistance) {
+                    minDistance = distance;
+                }
     }
-    if (this == cell) {
-        return 0;
+}
+        return minDistance == null ? null : 1 + minDistance;
     }
-    Integer minDistance = null;
-    for (Cell neighbor : this.getNeighbors()) {
-        Integer distance = neighbor.distance(cell, reccursionDepth - 1);
-        if (distance != null) {
-            if (minDistance == null || distance < minDistance) {
-                minDistance = distance;
+
+    public boolean isAvailable(Player player) {
+        return this.isEmpty() || this.getOwner() == player;
+    }
+    public Ship[] getAvailableShips(int n) {
+        Ship[] shipsOnCell = this.getShips();
+        int i = 0;
+        Ship[] availableShips = new Ship[n];
+        for (Ship ship : shipsOnCell) {
+            if (!ship.isUsed()) {
+                availableShips[n - 1] = ship;
+                n--;
+            }
+            if (n == 0) {
+                return availableShips;
             }
         }
+        return null;
     }
-    return minDistance == null ? null : 1 + minDistance;
-}
 }

@@ -1,13 +1,15 @@
 package fr.utt.lo02.core;
 
 import com.google.gson.annotations.Expose;
+import fr.utt.lo02.core.components.Area;
 import fr.utt.lo02.core.components.Cell;
 import fr.utt.lo02.core.components.Command;
 import fr.utt.lo02.core.components.Ship;
+import fr.utt.lo02.data.GameDataConverter;
+
 import static fr.utt.lo02.data.DataManipulator.getConfigProperties;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class Player {
     // private static int idCounter = 0;
@@ -189,14 +191,16 @@ public class Player {
      */
     public void explore(int nFleet) {
         int[][][] input = Game.getInstance().getInput().explore(this.getId(), nFleet);
+        // int[][][] input = [[[30, 2, 22]]];
+        // int[][][] input = new int[][][]{new int[][]{new int[]{16, 2, 10}}};
         // TODO : check if the input is valid
-        // [[[cellId, nShips], [cellId, nShips]], [[cellId, nShips], [cellId, nShips]], ...]
+        // int[][][] input = [[[startCellId, nShips, endCellId], [startCellId, nShips, endCellId]], [[startCellId, nShips, endCellId]], ...];
         if (input == null) {
             Game.getInstance().getInput().displayError("Invalid input");
             explore(nFleet);
             return;
         }
-        // Il faut un tebleau de cette forme : [nFleet][1,2][2]
+        // Il faut un tebleau de cette forme : [nFleet][1,2][3]
         if (input.length > nFleet) {
             Game.getInstance().getInput().displayError("You can't explore with more than +" + nFleet + " fleets");
             explore(nFleet);
@@ -208,16 +212,72 @@ public class Player {
                 explore(nFleet);
                 return;
             }
+            if (fleetMove.length == 2) {
+                if (!(fleetMove[0][2] == fleetMove[1][0])) {
+                    Game.getInstance().getInput().displayError("Invalid input, the end cell of the first move must be the start cell of the second move");
+                    explore(nFleet);
+                    return;
+                }
+            }
             for (int[] move : fleetMove) {
-                if (move.length != 2) {
+                if (move.length != 3) {
                     Game.getInstance().getInput().displayError("Invalid input");
                     explore(nFleet);
                     return;
                 }
             }
         }
+        
+        this.resetFleet();
+        Map<Cell, Ship[]> fleets = new HashMap<>();
+        Area area = Game.getInstance().getArea();
+        for (int[][] fleetMove : input) {
+            // System.out.println(Arrays.asList(area.getCell(fleetMove[0][0]).getShips()));
+            if (!(area.getCell(fleetMove[0][0]).getOwner() == this && area.getCell(fleetMove[0][2]).isAvailable(this))) {
+                Game.getInstance().getInput().displayError("You need to start from a cell you own and end on an empty or owned cell");
+                explore(nFleet);
+                return;
+            }
+            Ship[] availableShips = area.getCell(fleetMove[0][0]).getAvailableShips(fleetMove[0][1]);
+            if (availableShips == null) {
+                Game.getInstance().getInput().displayError("You don't have enough ships on this cell");
+                explore(nFleet);
+                return;
+            }
+            List<Ship> fleet = new ArrayList<>(Arrays.asList(availableShips).subList(0, fleetMove[0][1]));
+            if (fleetMove.length == 2) {
+                if (!(area.getCell(fleetMove[1][2]).isAvailable(this))) {
+                    Game.getInstance().getInput().displayError("You need to end on an empty or owned cell");
+                    explore(nFleet);
+                    return;
+                }
+                availableShips = area.getCell(fleetMove[1][0]).getAvailableShips(fleetMove[1][1]);
+                if (availableShips == null) {
+                    Game.getInstance().getInput().displayError("You don't have enough ships on this cell");
+                    explore(nFleet);
+                    return;
+                }
+                fleet.addAll(Arrays.asList(availableShips).subList(0, fleetMove[1][1]));
+            }
+            for (Ship ship : fleet) {
+                ship.setUsed(true);
+            }
+            // fleets.put(area.getCell(fleetMove[0][0]), fleet.toArray(new Ship[0]));
+            if (fleetMove.length == 2) {
+                fleets.put(area.getCell(fleetMove[1][2]), fleet.toArray(new Ship[0]));
+            } else {
+                fleets.put(area.getCell(fleetMove[0][2]), fleet.toArray(new Ship[0]));
+            }
+        }
         // TODO : explore
+        for (Cell cell : fleets.keySet()) {
+            for (Ship ship : fleets.get(cell)) {
+                ship.setCell(cell);
+            }
+        }
+        // System.out.println("Fleet moved" + GameDataConverter.toJson(Game.getInstance()));
     }
+
 
     /**
      * Exterminate a system with the player's fleet.
@@ -237,5 +297,14 @@ public class Player {
      */
     public int getNumberAvailableShips() {
         return (int) Arrays.stream(this.ships).filter(Ship::isAvailable).count();
+    }
+
+    /**
+     * Reset the player's fleet. Set all ships to unused.
+     */
+    public void resetFleet() {
+        for (Ship ship : this.ships) {
+            ship.setUsed(false);
+        }
     }
 }
