@@ -89,4 +89,23 @@ public class Cell {
         }
         return owner;
     }
+
+public Integer distance(Cell cell, int reccursionDepth) {
+    if (reccursionDepth == 0) {
+        return null;
+    }
+    if (this == cell) {
+        return 0;
+    }
+    Integer minDistance = null;
+    for (Cell neighbor : this.getNeighbors()) {
+        Integer distance = neighbor.distance(cell, reccursionDepth - 1);
+        if (distance != null) {
+            if (minDistance == null || distance < minDistance) {
+                minDistance = distance;
+            }
+        }
+    }
+    return minDistance == null ? null : 1 + minDistance;
+}
 }

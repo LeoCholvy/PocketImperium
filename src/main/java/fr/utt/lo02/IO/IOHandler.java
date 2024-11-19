@@ -9,7 +9,7 @@ public interface IOHandler {
     public int getStartingCellId(int playerId);
     public HashMap<Integer, Command[]> getCommandOrders();
     public int[][] expand(int playerId, int nShips);
-    public int[][] explore(int playerId, int nFleet);
+    public int[][][] explore(int playerId, int nFleet);
     public int[][] exterminate(int playerId, int nFleet);
     public int score(int id);
 }

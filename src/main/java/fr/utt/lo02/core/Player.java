@@ -163,15 +163,18 @@ public class Player {
             if (cell.getSystem() == null) {
                 Game.getInstance().getInput().displayError("You can't add ships on a cell without a system");
                 expand(nShips);
+                return;
             }
             if (cell.getOwner() != this) {
                 Game.getInstance().getInput().displayError("You can't add ships on a cell that doesn't belong to you");
                 expand(nShips);
+                return;
             }
             Ship[] availableShips = this.getAvailableShips(i[1]);
             if (availableShips == null) {
                 Game.getInstance().getInput().displayError("You don't have enough ships");
                 expand(nShips);
+                return;
             }
             for (int j = 0; j < i[1]; j++) {
                 availableShips[j].setCell(cell);
@@ -185,7 +188,34 @@ public class Player {
      * @param nFleet the number of fleets to explore with
      */
     public void explore(int nFleet) {
+        int[][][] input = Game.getInstance().getInput().explore(this.getId(), nFleet);
         // TODO : check if the input is valid
+        // [[[cellId, nShips], [cellId, nShips]], [[cellId, nShips], [cellId, nShips]], ...]
+        if (input == null) {
+            Game.getInstance().getInput().displayError("Invalid input");
+            explore(nFleet);
+            return;
+        }
+        // Il faut un tebleau de cette forme : [nFleet][1,2][2]
+        if (input.length > nFleet) {
+            Game.getInstance().getInput().displayError("You can't explore with more than +" + nFleet + " fleets");
+            explore(nFleet);
+            return;
+        }
+        for (int[][] fleetMove : input) {
+            if (fleetMove.length > 2) {
+                Game.getInstance().getInput().displayError("You can't explore with more than 2 ships per fleet");
+                explore(nFleet);
+                return;
+            }
+            for (int[] move : fleetMove) {
+                if (move.length != 2) {
+                    Game.getInstance().getInput().displayError("Invalid input");
+                    explore(nFleet);
+                    return;
+                }
+            }
+        }
         // TODO : explore
     }
 

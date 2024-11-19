@@ -115,9 +115,9 @@ public class CLI implements IOHandler {
         return ships.toArray(new int[0][0]);
     }
 
-    public int[][] explore(int playerId, int nFleet) {
+    public int[][][] explore(int playerId, int nFleet) {
         // TODO : INPUT : explore
-        return new int[0][0];
+        return new int[0][0][0];
     }
 
     public int[][] exterminate(int playerId, int nFleet) {
