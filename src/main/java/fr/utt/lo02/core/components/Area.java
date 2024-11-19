@@ -22,7 +22,7 @@ public class Area {
         }
 
         // set neighbors
-        this.setNeighbors();
+        this.setNeighborsFromConfig();
 
         // set sectors
         this.setSectors();
@@ -30,17 +30,25 @@ public class Area {
         this.generateSystems();
     }
 
-    public void setNeighbors() {
-        // FIXME: générer neighborsIds et pas neighbors ET ENSUITE appeller initNeighbors de chaque cellules
+    public void setNeighborsFromConfig() {
         Properties neighbors = DataManipulator.getMapProperties();
         int n = neighbors.size();
         for (int i = 0; i < n; i++) {
             String[] neighborIds = neighbors.getProperty(String.valueOf(i)).split(",");
             Cell[] neighborCells = new Cell[neighborIds.length];
+            int[] neighborIdsInt = new int[neighborIds.length];
             for (int j = 0; j < neighborIds.length; j++) {
                 neighborCells[j] = grid[Integer.parseInt(neighborIds[j])];
+                neighborIdsInt[j] = Integer.parseInt(neighborIds[j]);
             }
+            this.grid[i].setNeighborIds(neighborIdsInt);
             this.grid[i].setNeighbors(neighborCells);
+        }
+    }
+    public void setNeighbors() {
+        int n = grid.length;
+        for (Cell cell : grid) {
+            cell.initNeighborsFromIds();
         }
     }
 

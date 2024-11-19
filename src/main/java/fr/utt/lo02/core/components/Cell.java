@@ -13,6 +13,8 @@ public class Cell {
     @Expose
     private System system = null;
     private Cell[] neighbors;
+    @Expose
+    private int[] neighborIds;
     private boolean used = false;
     public Cell(int id) {
         this.id = id;
@@ -26,6 +28,19 @@ public class Cell {
     }
     public void setNeighbors(Cell[] neighbors) {
         this.neighbors = neighbors;
+    }
+    public int[] getNeighborIds() {
+        return this.neighborIds;
+    }
+    public void setNeighborIds(int[] neighborIds) {
+        this.neighborIds = neighborIds;
+    }
+    public void initNeighborsFromIds() {
+        Cell[] neighbors = new Cell[this.neighborIds.length];
+        for (int i = 0; i < this.neighborIds.length; i++) {
+            neighbors[i] = Game.getInstance().getArea().getCell(this.neighborIds[i]);
+        }
+        this.setNeighbors(neighbors);
     }
     public System getSystem() {
         return this.system;
@@ -73,9 +88,5 @@ public class Cell {
             }
         }
         return owner;
-    }
-
-    public void initNeighbors() {
-        // FIXME : implementer la méthode
     }
 }
