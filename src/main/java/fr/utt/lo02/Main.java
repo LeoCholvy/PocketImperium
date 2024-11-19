@@ -24,7 +24,8 @@ public class Main {
             // game.initIO(io);
             // java.lang.System.out.println(game.playRound());
             // java.lang.System.out.println(GameDataConverter.toJson(game));
-            Game game = new Game(io, new Player[]{new Player("Dodo"), new Player("Leo")});
+            // Game game = new Game(io, new Player[]{new Player("Dodo"), new Player("Leo")});
+            Game game = Game.getInstance(io, new Player[]{new Player("Dodo", 0), new Player("Leo", 1)});
             game.init();
             game.playRound();
 

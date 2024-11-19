@@ -1,6 +1,7 @@
 package fr.utt.lo02.core.components;
 
 import com.google.gson.annotations.Expose;
+import fr.utt.lo02.core.IllegalGameStateExeceptions;
 import fr.utt.lo02.data.DataManipulator;
 
 import java.lang.System;
@@ -63,9 +64,10 @@ public void setSectors() {
 
         // Initialize the sectors array
         this.sectors = new Sector[nSector];
-        int i = 0;
 
+        int i = 0;
         // Iterate over each sector definition in the properties
+        // FIXME : Use "." instead of " . " and delete all the " " from the string before splitting
         for(String strSector : properties.getProperty("Sectors").split(" . ")) {
             // Split the sector definition into type and cells
             String[] r = strSector.split(";");
@@ -79,11 +81,11 @@ public void setSectors() {
             // Create the appropriate sector type
             Sector sector;
             if (type.equals("Border")) {
-                sector = new BorderSector();
+                sector = new BorderSector(i);
             } else if (type.equals("Middle")) {
-                sector = new MiddleSector();
+                sector = new MiddleSector(i);
             } else {
-                sector = new TriPrimeSector();
+                sector = new TriPrimeSector(i);
             }
 
             // Assign cells to the sector
@@ -98,8 +100,7 @@ public void setSectors() {
             i++;
         }
     } catch (Exception e) {
-        System.out.println("Error in setSectors, the properties file is probably missing or corrupted.");
-        e.printStackTrace();
+        throw new IllegalGameStateExeceptions("Error setting sectors, the config file may be corrupted");
     }
 }
 

@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Player {
-    private static int idCounter = 0;
+    // private static int idCounter = 0;
     @Expose
     private final int id;
     @Expose
@@ -28,10 +28,11 @@ public class Player {
      * Constructor for the Player class.
      * @param name the name of the player
      */
-    public Player(String name) {
+    public Player(String name, int id) {
         // give an unique id to the player
-        this.id = idCounter;
-        idCounter++;
+        // this.id = idCounter;
+        // idCounter++;
+        this.id = id;
         this.name = name;
         this.score = 0;
         // get the number of ships per player from the config file
@@ -39,7 +40,7 @@ public class Player {
         this.ships = new Ship[nShips];
         // add ships to the player supply
         for (int i = 0; i < nShips; i++) {
-            this.ships[i] = new Ship();
+            this.ships[i] = new Ship(i);
         }
     }
 

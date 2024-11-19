@@ -20,24 +20,23 @@ public class Game {
     private Player[] players;
     @Expose
     private int startingPlayerIndex;
-    private IOHandler input;
     private static Game instance;
+    private IOHandler input;
     @Expose
     private int round = 0;
 
     /**
      * Constructor for the Game class.
-     * @param input the IOHandler for input operations
      * @param players the array of players in the game
      * @throws IllegalStateException if an instance of the game already exists
      */
-    public Game(IOHandler input, Player[] players) {
+    private Game(IOHandler input, Player[] players) {
         if (instance != null) {
             throw new IllegalStateException("Game already created");
         }
+        this.input = input;
         this.players = players;
         this.area = new Area();
-        this.input = input;
         instance = this;
     }
 
@@ -47,6 +46,31 @@ public class Game {
      */
     public static Game getInstance() {
         return instance;
+    }
+
+    /**
+     * Get the instance of the game.
+     * @param players the array of players in the game
+     * @return the instance of the game
+     * @throws IllegalGameStateExeceptions if an instance of the game already exists
+     */
+    public static Game getInstance(IOHandler input, Player[] players) {
+        if (instance != null) {
+            throw new IllegalGameStateExeceptions("Game already created");
+        }
+        return new Game(input, players);
+    }
+    /**
+     * Get the instance of the game.
+     * @param json the JSON representation of the game
+     * @return the instance of the game
+     * When loading the game from JSON data, the neighbors of the areas and the cells of the ships must be initialized.
+     * You also need to manually initialize the IOHandlers of the players.
+     * @see Game#initIO(IOHandler)
+     * @see IOHandler
+     */
+    public static Game getInstance(String json) {
+        return GameDataConverter.fromJson(json);
     }
 
     /**
@@ -167,7 +191,6 @@ public class Game {
      * @return the cell where the ships are placed
      */
     public Cell placeTwoShips(Player player) {
-        // return this.area.getCell(this.input.placeTwoShips(player));
         int input = this.input.getStartingCellId(player.getId());
         if (!(input >= 0 && input < this.area.getGrid().length)) {
             this.input.displayError("The cell id must be between 0 and " + (this.area.getGrid().length - 1));

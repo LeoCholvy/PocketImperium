@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Properties;
 
 public class BorderSector extends Sector {
-    public BorderSector() {
-        super();
+    public BorderSector(int id) {
+        super(id);
     }
 
     @Override

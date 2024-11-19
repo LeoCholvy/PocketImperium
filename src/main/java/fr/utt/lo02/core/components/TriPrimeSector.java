@@ -1,8 +1,8 @@
 package fr.utt.lo02.core.components;
 
 public class TriPrimeSector extends Sector {
-    public TriPrimeSector() {
-        super();
+    public TriPrimeSector(int id) {
+        super(id);
     }
     @Override
     public void generateSystems() {

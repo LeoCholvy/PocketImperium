@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Properties;
 
 public class MiddleSector extends Sector {
-    public MiddleSector() {
-        super();
+    public MiddleSector(int id) {
+        super(id);
     }
     @Override
     public void generateSystems() {

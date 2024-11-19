@@ -5,7 +5,7 @@ import fr.utt.lo02.core.Game;
 
 // public abstract class Sector {
 public class Sector {
-    private static int idCounter = 0;
+    // private static int idCounter = 0;
     @Expose
     private final int id;
     private boolean used;
@@ -13,9 +13,12 @@ public class Sector {
     private int[] cellIds;
     protected Cell[] cells;
 
-    public Sector() {
-        this.id = idCounter;
-        idCounter++;
+    // public Sector() {
+    //     this.id = idCounter;
+    //     idCounter++;
+    // }
+    public Sector(int id) {
+        this.id = id;
     }
     public int getId() {
         return this.id;

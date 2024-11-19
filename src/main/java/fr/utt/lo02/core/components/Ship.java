@@ -7,16 +7,19 @@ import fr.utt.lo02.core.Player;
 import java.util.List;
 
 public class Ship {
-    private static int idCounter = 0;
+    // private static int idCounter = 0;
     private boolean used;
     @Expose
     private final int id;
     @Expose
     private Integer cellId;
     private Cell cell;
-    public Ship() {
-        this.id = idCounter;
-        idCounter++;
+    // public Ship() {
+    //     this.id = idCounter;
+    //     idCounter++;
+    // }
+    public Ship(int id) {
+        this.id = id;
     }
 
     public void setUsed(boolean used) {

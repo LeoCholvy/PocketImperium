@@ -24,7 +24,7 @@ public class CLI implements IOHandler {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         try {
             return Integer.parseInt(reader.readLine());
-        } catch (IOException e) {
+        } catch (Exception e) {
             displayError("Invalid input, please enter a number");
             return getStartingCellId(playerid);
         }
