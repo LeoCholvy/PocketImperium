@@ -191,10 +191,12 @@ public class Player {
      */
     public void explore(int nFleet) {
         int[][][] input = Game.getInstance().getInput().explore(this.getId(), nFleet);
-        // int[][][] input = [[[30, 2, 22]]];
+        // int[][][] input = [[[30, 2, 22], [22,2, 21]];
+        // int[][][] input = new int[][][]{new int[][]{new int[]{11, 2, 16}}};
         // int[][][] input = new int[][][]{new int[][]{new int[]{16, 2, 10}}};
         // TODO : check if the input is valid
         // int[][][] input = [[[startCellId, nShips, endCellId], [startCellId, nShips, endCellId]], [[startCellId, nShips, endCellId]], ...];
+        Area area = Game.getInstance().getArea();
         if (input == null) {
             Game.getInstance().getInput().displayError("Invalid input");
             explore(nFleet);
@@ -218,10 +220,21 @@ public class Player {
                     explore(nFleet);
                     return;
                 }
+                if (area.getCell(fleetMove[0][2]) == area.getTriPrimeCell()) {
+                    Game.getInstance().getInput().displayError("You can't pass through the TriPrime cell");
+                    explore(nFleet);
+                    return;
+                }
             }
             for (int[] move : fleetMove) {
                 if (move.length != 3) {
                     Game.getInstance().getInput().displayError("Invalid input");
+                    explore(nFleet);
+                    return;
+                }
+                Integer distance = area.getCell(move[0]).distance(area.getCell(move[2]), 2);
+                if (distance == null || distance != 1) {
+                    Game.getInstance().getInput().displayError("Invalid input, the cells must be adjacent");
                     explore(nFleet);
                     return;
                 }
@@ -230,7 +243,7 @@ public class Player {
         
         this.resetFleet();
         Map<Cell, Ship[]> fleets = new HashMap<>();
-        Area area = Game.getInstance().getArea();
+        // Area area = Game.getInstance().getArea();
         for (int[][] fleetMove : input) {
             // System.out.println(Arrays.asList(area.getCell(fleetMove[0][0]).getShips()));
             if (!(area.getCell(fleetMove[0][0]).getOwner() == this && area.getCell(fleetMove[0][2]).isAvailable(this))) {

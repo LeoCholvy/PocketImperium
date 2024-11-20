@@ -9,6 +9,12 @@ import java.util.Properties;
 public class BorderSector extends Sector {
     public BorderSector(int id) {
         super(id);
+        this.initType();
+    }
+
+    @Override
+    public void initType() {
+        this.type = SectorType.BORDER;
     }
 
     @Override

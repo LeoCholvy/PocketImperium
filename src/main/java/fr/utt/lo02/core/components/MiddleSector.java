@@ -9,7 +9,14 @@ import java.util.Properties;
 public class MiddleSector extends Sector {
     public MiddleSector(int id) {
         super(id);
+        this.initType();
     }
+
+    @Override
+    public void initType() {
+        this.type = SectorType.MIDDLE;
+    }
+
     @Override
     public void generateSystems() {
         Properties properties = DataManipulator.getSectorProperties();

@@ -12,6 +12,8 @@ public class Sector {
     @Expose
     private int[] cellIds;
     protected Cell[] cells;
+    @Expose
+    protected SectorType type;
 
     // public Sector() {
     //     this.id = idCounter;
@@ -19,7 +21,9 @@ public class Sector {
     // }
     public Sector(int id) {
         this.id = id;
+        this.initType();
     }
+    public void initType() {}
     public int getId() {
         return this.id;
     }
@@ -41,9 +45,7 @@ public class Sector {
         }
     }
     // public abstract void generateSystems();
-    public void generateSystems() {
-        // do nothing
-    }
+    public void generateSystems() {}
     public void initCells() {
         if (this.cellIds == null) {
             return;
@@ -54,5 +56,9 @@ public class Sector {
             }
             this.cells[i] = Game.getInstance().getArea().getCell(this.cellIds[i]);
         }
+    }
+
+    public SectorType getType() {
+        return this.type;
     }
 }

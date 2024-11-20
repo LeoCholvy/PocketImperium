@@ -90,6 +90,14 @@ public class Cell {
         return owner;
     }
 
+    /**
+     * Returns the distance between this cell and another cell.
+     * The distance is the number of cells that must be crossed to reach the other cell.
+     * The distance is calculated by recursively checking the neighbors of the cell.
+     * @param cell The cell to calculate the distance to
+     * @param reccursionDepth The maximum depth of the recursion, be careful, you need a recursion depth of 2 for a distance of 1 for example (add 1 to the minimum)
+     * @return The distance between the cells or null if the distance is greater than the recursion depth
+     */
     public Integer distance(Cell cell, int reccursionDepth) {
         if (reccursionDepth == 0) {
             return null;
@@ -104,8 +112,8 @@ public class Cell {
                 if (minDistance == null || distance < minDistance) {
                     minDistance = distance;
                 }
-    }
-}
+            }
+        }
         return minDistance == null ? null : 1 + minDistance;
     }
 

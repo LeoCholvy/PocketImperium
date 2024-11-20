@@ -5,6 +5,7 @@ import fr.utt.lo02.core.IllegalGameStateExeceptions;
 import fr.utt.lo02.data.DataManipulator;
 
 import java.lang.System;
+import java.util.List;
 import java.util.Properties;
 
 public class Area {
@@ -119,6 +120,9 @@ public void setSectors() {
     }
 
     public Cell getCell(int id) {
+        if (id < 0 || id >= grid.length) {
+            throw new IllegalGameStateExeceptions("Cell id out of bounds");
+        }
         return grid[id];
     }
     public Cell[] getGrid() {
@@ -126,5 +130,20 @@ public void setSectors() {
     }
     public Sector[] getSectors() {
         return sectors;
+    }
+    public Cell getTriPrimeCell() {
+        List<Cell> cells = new java.util.ArrayList<>(List.of());
+        for (Sector sector : sectors) {
+            // if (sector instanceof TriPrimeSector) {
+            //     cells.addAll(List.of(sector.getCells()));
+            // }
+            if (sector.getType() == SectorType.TRI_PRIME) {
+                cells.addAll(List.of(sector.getCells()));
+            }
+        }
+        if (cells.size() != 1) {
+            throw new IllegalGameStateExeceptions("TriPrimeSector should have only one cell");
+        }
+        return cells.get(0);
     }
 }
