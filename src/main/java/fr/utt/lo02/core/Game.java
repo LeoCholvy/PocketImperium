@@ -467,7 +467,7 @@ public class Game {
         }
 
         Player triPrimeOwner = this.area.getTriPrimeCell().getOwner();
-        if (this.getScorablesSectors().isEmpty() && triPrimeOwner != null) {
+        if (!this.getScorablesSectors().isEmpty() && triPrimeOwner != null) {
             triPrimeOwner.score();
         }
     }
