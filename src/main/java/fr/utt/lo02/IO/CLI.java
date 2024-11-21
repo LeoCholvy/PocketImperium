@@ -5,6 +5,7 @@ import fr.utt.lo02.core.IllegalGameStateExeceptions;
 import fr.utt.lo02.core.Player;
 import fr.utt.lo02.core.components.Area;
 import fr.utt.lo02.core.components.Command;
+import fr.utt.lo02.core.components.Sector;
 import fr.utt.lo02.data.GameDataConverter;
 
 import java.io.*;
@@ -78,7 +79,7 @@ public class CLI implements IOHandler {
     public int[][] expand(int playerId, int nShips) {
         ArrayList<int[]> ships = new ArrayList<>();
         Player player = Game.getInstance().getPlayer(playerId);
-        displayGameState();
+        // displayGameState();
         int nShipsMax = Math.min(nShips, player.getNumberAvailableShips());
         System.out.println("Player " + player.getName() + ", you have " + nShipsMax + " ships to expand");
         while (nShipsMax > 0) {
@@ -87,6 +88,7 @@ public class CLI implements IOHandler {
             displayGameState();
             System.out.println("Player " + player.getName() + ", chose a cell to expand your ship");
             System.out.println("You have " + nShipsMax + " ships left, write -1 to stop expanding");
+            System.out.println("Choose a cell to expand");
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
             try {
                 System.out.print(">>>");
@@ -268,6 +270,34 @@ public class CLI implements IOHandler {
     }
 
     public int score(int id) {
-        return 0;
+        List<Sector> scorableSectors = Game.getInstance().getScorablesSectors();
+        System.out.println("Scorable sectors : ");
+        for (Sector sector : scorableSectors) {
+            System.out.println("Id: " + sector.getId() + ", type: " + sector.getType());
+        }
+        System.out.println("Player " + Game.getInstance().getPlayer(id).getName() + ", chose a sector to score");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        int sectorId;
+        try {
+            System.out.print(">>>");
+            sectorId = Integer.parseInt(reader.readLine());
+            boolean found = false;
+            for (Sector sector : scorableSectors) {
+                if (sector.getId() == sectorId) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                throw new IllegalGameStateExeceptions("This sector is not scorable");
+            }
+        } catch (IllegalGameStateExeceptions e) {
+            displayError(e.getMessage());
+            return score(id);
+        } catch (Exception e) {
+            displayError("Invalid input, please enter a number");
+            return score(id);
+        }
+        return sectorId;
     }
 }

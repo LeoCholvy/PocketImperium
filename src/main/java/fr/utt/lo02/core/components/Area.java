@@ -5,6 +5,7 @@ import fr.utt.lo02.core.IllegalGameStateExeceptions;
 import fr.utt.lo02.data.DataManipulator;
 
 import java.lang.System;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -151,5 +152,27 @@ public void setSectors() {
         for (Cell cell : grid) {
             cell.sustainShips();
         }
+    }
+
+    public Sector getTriPrimeSector() {
+        List<Sector> triPrimes = new ArrayList<>();
+        for (Sector sector : this.sectors) {
+            if (sector.getType() == SectorType.TRI_PRIME) {
+                triPrimes.add(sector);
+            }
+        }
+        if (triPrimes.size() != 1) {
+            throw new IllegalGameStateExeceptions("TriPrimeSector should have only one sector");
+        }
+        return triPrimes.getFirst();
+    }
+
+    public Sector getSector(int id) {
+        for (Sector sector : this.sectors) {
+            if (sector.getId() == id) {
+                return sector;
+            }
+        }
+        throw new IllegalGameStateExeceptions("Sector not found");
     }
 }

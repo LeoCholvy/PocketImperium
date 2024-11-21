@@ -19,6 +19,7 @@ public class GameDataConverter {
         game.initNeighbors();
         game.initShipsCells();
         game.initSectorsCells();
+        game.initPlayerIterator();
         return game;
     }
 }

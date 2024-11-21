@@ -61,4 +61,21 @@ public class Sector {
     public SectorType getType() {
         return this.type;
     }
+
+    /**
+     * A scorable sector have at least one cell with a system and isn't used
+     * @return true if the sector is scorable, false otherwise
+     */
+    public boolean isScorable() {
+        Area area = Game.getInstance().getArea();
+        if (area.getTriPrimeSector() == this || this.used) {
+            return false;
+        }
+        for (Cell cell : this.cells) {
+            if (cell.getSystem() != null && cell.getOwner() != null) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

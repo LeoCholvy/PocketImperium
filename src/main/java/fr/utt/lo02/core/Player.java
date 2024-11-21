@@ -3,9 +3,9 @@ package fr.utt.lo02.core;
 import com.google.gson.annotations.Expose;
 import fr.utt.lo02.core.components.Area;
 import fr.utt.lo02.core.components.Cell;
-import fr.utt.lo02.core.components.Command;
+import fr.utt.lo02.core.components.Sector;
 import fr.utt.lo02.core.components.Ship;
-import fr.utt.lo02.data.GameDataConverter;
+import fr.utt.lo02.core.components.System;
 
 import static fr.utt.lo02.data.DataManipulator.getConfigProperties;
 
@@ -25,6 +25,7 @@ public class Player {
     private Ship[] ships;
     @Expose
     private boolean dead = false;
+    private Player nextPlayer;
 
     /**
      * Constructor for the Player class.
@@ -138,7 +139,19 @@ public class Player {
     public void score () {
         int SectorId = Game.getInstance().getInput().score(this.getId());
         // TODO : check if the input is valid
+        Sector sector = Game.getInstance().getArea().getSector(SectorId);
+        if (!sector.isScorable()) {
+            Game.getInstance().getInput().displayError("You can't score this sector, it need to have occupied systems and not to be TriPrime");
+            this.score();
+        }
         // TODO : score the player
+        for (Cell cell : sector.getCells()) {
+            System system = cell.getSystem();
+            if (system != null && cell.getOwner() == this) {
+                this.score += system.getLevel();
+            }
+        }
+        sector.setUsed(true);
     }
 
     /**
@@ -319,5 +332,41 @@ public class Player {
         for (Ship ship : this.ships) {
             ship.setUsed(false);
         }
+    }
+
+
+    /**
+     * Set the next player for the iterator.
+     * @param nextPlayer the next player
+     * @throws IllegalGameStateExeceptions if the next player is already set
+     * @see Player#next()
+     */
+    public void setNextPlayer(Player nextPlayer) {
+        if (this.nextPlayer != null) {
+            throw new IllegalGameStateExeceptions("Next player already set");
+        }
+
+        this.nextPlayer = nextPlayer;
+    }
+
+    /**
+     * Get the next player.
+     * @return the next player
+     * But it can return null, if the next player is the starting player (when we already looped through all players)
+     * @throws IllegalGameStateExeceptions if the next player is not found
+     */
+    public Player next() {
+        if (this.nextPlayer == null) {
+            throw new IllegalGameStateExeceptions("Next player not found");
+        }
+        Player next = this.nextPlayer;
+        Game game = Game.getInstance();
+        if (next == game.getStartingPlayer()) {
+            return null;
+        }
+        if (next.isDead()) {
+            return next.next();
+        }
+        return next;
     }
 }

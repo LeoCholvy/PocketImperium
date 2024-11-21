@@ -7,6 +7,7 @@ import fr.utt.lo02.data.GameDataConverter;
 
 import java.lang.System;
 import java.util.HashMap;
+import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -38,7 +39,17 @@ public class Game {
         this.players = players;
         this.area = new Area();
         instance = this;
-        // this.init
+        this.initPlayerIterator();
+    }
+
+    public void initPlayerIterator() {
+        int n = this.players.length;
+        for (int i = 0 ; i < n ; i++) {
+            this.players[i].setNextPlayer(this.players[(i + 1) % n]);
+        }
+    }
+    public Player getStartingPlayer() {
+        return this.players[this.startingPlayerIndex];
     }
 
     /**
@@ -70,8 +81,10 @@ public class Game {
      * @see Game#initIO(IOHandler)
      * @see IOHandler
      */
-    public static Game getInstance(String json) {
-        return GameDataConverter.fromJson(json);
+    public static Game getInstance(IOHandler io, String json) {
+        Game game = GameDataConverter.fromJson(json);
+        game.initIO(io);
+        return game;
     }
 
     /**
@@ -110,23 +123,23 @@ public class Game {
      * @return the next player
      * @throws IllegalStateException if no player is found
      */
-    private Player cyclePlayers(int n) {
-        if (n == 0) {
-            return this.players[this.startingPlayerIndex];
-        }
-        int p = this.startingPlayerIndex;
-        int i = 0;
-        int nPlayers = this.players.length;
-        while (i < nPlayers) {
-            p = (p + 1) % nPlayers;
-            if (!this.players[p].isDead()) {
-                if (++i == n) {
-                    return this.players[p];
-                }
-            }
-        }
-        throw new IllegalStateException("No player found");
-    }
+    // private Player cyclePlayers(int n) {
+    //     if (n == 0) {
+    //         return this.players[this.startingPlayerIndex];
+    //     }
+    //     int p = this.startingPlayerIndex;
+    //     int i = 0;
+    //     int nPlayers = this.players.length;
+    //     while (i < nPlayers) {
+    //         p = (p + 1) % nPlayers;
+    //         if (!this.players[p].isDead()) {
+    //             if (++i == n) {
+    //                 return this.players[p];
+    //             }
+    //         }
+    //     }
+    //     throw new IllegalStateException("No player found");
+    // }
 
     /**
      * Cycle to the next starting player.
@@ -298,34 +311,57 @@ public class Game {
     private boolean microPhase2(HashMap<Player, Command> commands) {
         // priority Expand then Explore the Exterminate
         // we start from the starting player
-        int p = this.startingPlayerIndex;
-        int n = this.getAlivePlayers().length;
+        // int p = this.startingPlayerIndex;
+        // int n = this.getAlivePlayers().length;
         int l;
         //1. Expand
         // l <- number of player who expand
         l = (int) Stream.of(commands.values().toArray()).filter(command -> command == Command.EXPAND).count();
-        for (int i = 0; i < n; i++) {
-            Player player = this.cyclePlayers(i);
-            if (commands.get(player) == Command.EXPAND) {
-                player.expand(4 - l);
+        // for (int i = 0; i < n; i++) {
+        //     Player player = this.cyclePlayers(i);
+        //     if (commands.get(player) == Command.EXPAND) {
+        //         player.expand(4 - l);
+        //     }
+        // }
+        Player p = this.getStartingPlayer();
+        while (p != null) {
+            if (commands.get(p) == Command.EXPAND) {
+                p.expand(4 - l);
             }
+            p = p.next();
         }
+
         // 2. Explore
         l = (int) Stream.of(commands.values().toArray()).filter(command -> command == Command.EXPLORE).count();
-        for (int i = 0; i < n; i++) {
-            Player player = this.cyclePlayers(i);
-            if (commands.get(player) == Command.EXPLORE) {
-                player.explore(4 - l);
+        // for (int i = 0; i < n; i++) {
+        //     Player player = this.cyclePlayers(i);
+        //     if (commands.get(player) == Command.EXPLORE) {
+        //         player.explore(4 - l);
+        //     }
+        // }
+        p = this.getStartingPlayer();
+        while (p != null) {
+            if (commands.get(p) == Command.EXPLORE) {
+                p.explore(4 - l);
             }
+            p = p.next();
         }
+
         // 3. Exterminate
         l = (int) Stream.of(commands.values().toArray()).filter(command -> command == Command.EXTERMINATE).count();
         // FIXME : generate the order of the players and check alive
-        for (int i = 0; i < n; i++) {
-            Player player = this.cyclePlayers(i);
-            if (commands.get(player) == Command.EXTERMINATE) {
-                player.exterminate(4-l);
+        // for (int i = 0; i < n; i++) {
+        //     Player player = this.cyclePlayers(i);
+        //     if (commands.get(player) == Command.EXTERMINATE) {
+        //         player.exterminate(4-l);
+        //     }
+        // }
+        p = this.getStartingPlayer();
+        while (p != null) {
+            if (commands.get(p) == Command.EXTERMINATE) {
+                p.exterminate(4 - l);
             }
+            p = p.next();
         }
 
         // TODO : check if the game should end (or if a player died)
@@ -357,38 +393,44 @@ public class Game {
      * Sustains ships and scores sectors.
      */
     private void phase3() {
-        // sustain ships
-        for (Cell cell : this.getArea().getGrid()) {
-            Ship[] ships = cell.getShips();
-            if (ships.length == 0) {
-                continue;
-            }
-            // raise error if the ships are not all from the same player
-            Player c = ships[0].getPlayer();
-            for (Ship ship : ships) {
-                if (ship.getPlayer() != c) {
-                    System.out.println("State of the game when the error occurred :");
-                    System.out.println(GameDataConverter.toJson(this));
-                    throw new IllegalStateException("The ships in the same cell must be from the same player");
-                }
-            }
+        // OLD :
+        // // sustain ships
+        // for (Cell cell : this.getArea().getGrid()) {
+        //     Ship[] ships = cell.getShips();
+        //     if (ships.length == 0) {
+        //         continue;
+        //     }
+        //     // raise error if the ships are not all from the same player
+        //     Player c = ships[0].getPlayer();
+        //     for (Ship ship : ships) {
+        //         if (ship.getPlayer() != c) {
+        //             System.out.println("State of the game when the error occurred :");
+        //             System.out.println(GameDataConverter.toJson(this));
+        //             throw new IllegalStateException("The ships in the same cell must be from the same player");
+        //         }
+        //     }
+        //
+        //     int maxShips;
+        //     if (cell.getSystem() != null) {
+        //         maxShips = cell.getSystem().getLevel() + 1;
+        //     } else {
+        //         maxShips = 1;
+        //     }
+        //
+        //     for (int i = maxShips; i < ships.length; i++) {
+        //         ships[i].setCell(null);
+        //     }
+        // }
+        // // score sectors
+        // for (int i = 0; i < this.getAlivePlayers().length; i++) {
+        //     this.cyclePlayers(i).score();
+        // }
+        // // if
 
-            int maxShips;
-            if (cell.getSystem() != null) {
-                maxShips = cell.getSystem().getLevel() + 1;
-            } else {
-                maxShips = 1;
-            }
+        // NEW :
+        this.area.sustainShips();
 
-            for (int i = maxShips; i < ships.length; i++) {
-                ships[i].setCell(null);
-            }
-        }
-        // score sectors
-        for (int i = 0; i < this.getAlivePlayers().length; i++) {
-            this.cyclePlayers(i).score();
-        }
-        // if
+        this.scoreSectors();
     }
 
     /**
@@ -406,18 +448,28 @@ public class Game {
             // when playRound return true, the game is over, we need to call endGame (final scoring)
         }
         this.phase3();
-
-        this.area.sustainShips();
-
-        this.scoreSectors();
-
         // TODO
+        this.cycleStartingPlayer();
 
         return false;
     }
 
+    public List<Sector> getScorablesSectors() {
+        return Stream.of(this.area.getSectors()).filter(Sector::isScorable).toList();
+    }
+
     private void scoreSectors() {
-        // TODO
+        this.resetSectors();
+        Player p = this.getStartingPlayer();
+        while (!(p == null || this.getScorablesSectors().isEmpty())) {
+            p.score();
+            p = p.next(); // NOTE : p.next() will return null if we looped through all the players
+        }
+
+        Player triPrimeOwner = this.area.getTriPrimeCell().getOwner();
+        if (this.getScorablesSectors().isEmpty() && triPrimeOwner != null) {
+            triPrimeOwner.score();
+        }
     }
 
     /**
@@ -440,7 +492,7 @@ public class Game {
      * Initialize the IO handler.
      * @param io the IO handler to initialize
      */
-    public void initIO(IOHandler io) {
+    private void initIO(IOHandler io) {
         this.input = io;
     }
 }
