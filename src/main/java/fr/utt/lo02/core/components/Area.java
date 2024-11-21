@@ -146,4 +146,10 @@ public void setSectors() {
         }
         return cells.get(0);
     }
+
+    public void sustainShips() {
+        for (Cell cell : grid) {
+            cell.sustainShips();
+        }
+    }
 }

@@ -38,6 +38,7 @@ public class Game {
         this.players = players;
         this.area = new Area();
         instance = this;
+        // this.init
     }
 
     /**
@@ -143,6 +144,7 @@ public class Game {
             }
             i++;
         }
+        throw new IllegalGameStateExeceptions("No player found (all player are likely dead), error : the game should have ended");
     }
 
     /**
@@ -326,8 +328,8 @@ public class Game {
             }
         }
 
+        // TODO : check if the game should end (or if a player died)
         //NOTE We should get the order from the config file
-
         return false;
     }
 
@@ -399,13 +401,23 @@ public class Game {
         if (this.phase2(orders)) {
             return true;
         }
-        if (this.round == 9) {
+        if (this.round >= 9) {
             return true;
             // when playRound return true, the game is over, we need to call endGame (final scoring)
         }
         this.phase3();
 
+        this.area.sustainShips();
+
+        this.scoreSectors();
+
+        // TODO
+
         return false;
+    }
+
+    private void scoreSectors() {
+        // TODO
     }
 
     /**

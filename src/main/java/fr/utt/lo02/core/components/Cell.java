@@ -2,6 +2,7 @@ package fr.utt.lo02.core.components;
 
 import com.google.gson.annotations.Expose;
 import fr.utt.lo02.core.Game;
+import fr.utt.lo02.core.IllegalGameStateExeceptions;
 import fr.utt.lo02.core.Player;
 import fr.utt.lo02.data.GameDataConverter;
 
@@ -84,7 +85,7 @@ public class Cell {
             if (ship.getPlayer() != owner) {
                 java.lang.System.out.println("State of the game when the error occurred :");
                 java.lang.System.out.println(GameDataConverter.toJson(Game.getInstance()));
-                throw new IllegalStateException("The ships in the same cell must be from the same player");
+                throw new IllegalGameStateExeceptions("The ships in the same cell must be from the same player");
             }
         }
         return owner;
@@ -134,5 +135,17 @@ public class Cell {
             }
         }
         return null;
+    }
+
+    public void sustainShips() {
+        Ship[] ships = this.getShips();
+        this.getOwner(); // check if all ships are from the same player
+        int max = 1;
+        if (this.system != null) {
+            max += this.system.getLevel();
+        }
+        for (int i = 0; i < ships.length - max; i++) {
+            ships[i].setCell(null);
+        }
     }
 }

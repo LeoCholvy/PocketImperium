@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class CLI implements IOHandler {
-    public void displayGameState() {
+    public static void displayGameState() {
         System.out.println("-----------------------------------------------------------");
         System.out.println(GameDataConverter.toJson(Game.getInstance()));
         System.out.println("-----------------------------------------------------------");
