@@ -192,6 +192,17 @@ public class DataManipulator {
         }
         throw new IllegalGameStateExeceptions("Save file not found");
     }
+    public static boolean saveGame(String name, String json) {
+        // if (getSavesList().contains(name)) {
+        //     return false;
+        // }
+        try {
+            Files.write(Paths.get("src/ressources/saves/" + name + ".json"), json.getBytes());
+        } catch (IOException e) {
+            return false;
+        }
+        return true;
+    }
 
     public static Properties getSectorProperties() {
         return SectorProperties;
