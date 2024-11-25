@@ -1,10 +1,18 @@
 package fr.utt.lo02.data;
 
+import com.google.gson.internal.Streams;
+import fr.utt.lo02.core.IllegalGameStateExeceptions;
+
 import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 public class DataManipulator {
     private static Properties mapProperties = loadMapProperties();
@@ -150,18 +158,39 @@ public class DataManipulator {
     }
 
 
-    public static void getSavesList() {
+    public static Set<String> getSavesList() {
         // read all files names in saves folder
-        // File folder = new File("src/ressources/saves");
-        // File[] listOfFiles = folder.listFiles();
-        // if (listOfFiles.length == 0) {
-        //     System.out.println("No saves found");
-        // }
-        // for (File file : listOfFiles) {
-        //     if (file.isFile()) {
-        //         System.out.println(file.getName().split("\\.")[0]);
-        //     }
-        // }
+        File folder = new File("src/ressources/saves");
+        File[] listOfFiles = folder.listFiles();
+        Set<String> saves = new HashSet<>();
+        if (listOfFiles == null) {
+            throw new IllegalGameStateExeceptions("No saves folder found");
+        }
+        for (File file : listOfFiles) {
+            if (file.isFile()) {
+                String[] name = file.getName().split("\\.");
+                if (name.length == 2 && name[1].equals("json")) {
+                    saves.add(name[0]);
+                }
+            }
+        }
+        return saves;
+    }
+    public static String loadSave(String name) {
+        File file = new File("src/ressources/saves/" + name + ".json");
+        if (file.exists()) {
+            List<String> lines;
+            try {
+                lines = Files.readAllLines(Paths.get(file.getPath()));
+                if (lines.size() == 1) {
+                    return lines.get(0);
+                }
+                throw new IllegalGameStateExeceptions("Save file corrupted");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        throw new IllegalGameStateExeceptions("Save file not found");
     }
 
     public static Properties getSectorProperties() {
