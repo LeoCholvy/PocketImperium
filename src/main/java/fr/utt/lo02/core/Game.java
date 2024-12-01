@@ -3,9 +3,11 @@ package fr.utt.lo02.core;
 import com.google.gson.annotations.Expose;
 import fr.utt.lo02.IO.IOHandler;
 import fr.utt.lo02.core.components.*;
+import fr.utt.lo02.data.DataManipulator;
 import fr.utt.lo02.data.GameDataConverter;
 
 import java.lang.System;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
@@ -25,6 +27,7 @@ public class Game {
     private IOHandler input;
     @Expose
     private int round = 0;
+    private String name = null;
 
     /**
      * Constructor for the Game class.
@@ -81,8 +84,8 @@ public class Game {
      * @see Game#initIO(IOHandler)
      * @see IOHandler
      */
-    public static Game getInstance(IOHandler io, String json) {
-        Game game = GameDataConverter.fromJson(json);
+    public static Game getInstance(IOHandler io, String json, String name) {
+        Game game = GameDataConverter.fromJson(json, name);
         game.initIO(io);
         return game;
     }
@@ -362,6 +365,10 @@ public class Game {
         while (p != null) {
             if (commands.get(p) == Command.EXTERMINATE) {
                 p.exterminate(4 - l);
+                this.checkPlayersDeath();
+                if (this.getAlivePlayers().length <= 1) {
+                    return true;
+                }
             }
             p = p.next();
         }
@@ -369,9 +376,7 @@ public class Game {
         // TODO : check if the game should end (or if a player died)
         // NOTE We should get the order from the config file
 
-        this.checkPlayersDeath();
-
-        return !(this.getAlivePlayers().length > 1);
+        return false;
     }
 
     private void checkPlayersDeath() {
@@ -459,9 +464,10 @@ public class Game {
             // when playRound return true, the game is over, we need to call endGame (final scoring)
         }
         this.phase3();
-        // TODO
         this.cycleStartingPlayer();
 
+        // TODO : save the game state
+        DataManipulator.saveGame(this.getName(), GameDataConverter.toJson(this));
         return false;
     }
 
@@ -488,24 +494,44 @@ public class Game {
      * @return false
      */
     public boolean playGame() {
+        while (!this.playRound()) {
+            // do nothing
+        }
+        DataManipulator.saveGame(this.getName(), GameDataConverter.toJson(this));
+        this.endGame();
         return false;
-        // while (true) {
-        //     if (this.playRound()) {
-        //         break;
-        //     }
-        // }
-        // this.endGame();
     }
 
     private void endGame() {
-        // if (this.getAlivePlayers().length == 1) {
-        // //     he is the winner
-        // } else if (this.getAlivePlayers().length == 0) {
-        // //     no winner
-        // } else {
-        // //     score the sectors
-        // //     then chose a winner !
-        // }
+        if (this.getAlivePlayers().length == 1) {
+            this.getAlivePlayers()[0].score(2);
+            this.getInput().displayWinner(new int[]{this.getAlivePlayers()[0].getId()});
+        } else if (this.getAlivePlayers().length == 0) {
+            this.getInput().displayDraw();
+        } else {
+            // Final scoring
+            this.cycleStartingPlayer();
+            this.resetSectors();
+            Player p = this.getStartingPlayer();
+            while (p != null) {
+                p.score(2);
+                p = p.next();
+            }
+            // find the winner
+            List<Player> winners = new ArrayList<>();
+            int maxScore = -1;
+            for (Player player : this.players) {
+                if (player.getScore() > maxScore) {
+                    winners.clear();
+                    winners.add(player);
+                    maxScore = player.getScore();
+                } else if (player.getScore() == maxScore) {
+                    winners.add(player);
+                }
+            }
+            int[] winnerIds = winners.stream().mapToInt(Player::getId).toArray();
+            this.getInput().displayWinner(winnerIds);
+        }
     }
 
     /**
@@ -522,5 +548,19 @@ public class Game {
      */
     private void initIO(IOHandler io) {
         this.input = io;
+    }
+
+    public Player[] getPlayers() {
+        return this.players;
+    }
+
+    public void setName(String name) {
+        if (this.name != null) {
+            throw new IllegalGameStateExeceptions("The name of the game can only be set once");
+        }
+        this.name = name;
+    }
+    public String getName() {
+        return this.name;
     }
 }

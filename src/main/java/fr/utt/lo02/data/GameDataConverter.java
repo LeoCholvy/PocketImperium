@@ -11,7 +11,7 @@ public class GameDataConverter {
     public static String toJson(Game game) {
         return gson.toJson(game);
     }
-    public static Game fromJson(String json) {
+    public static Game fromJson(String json, String name) {
         // FIXME : also add IOHandler to the game
         Game game = gson.fromJson(json, Game.class);
         Game.setInstance(game); // VERY IMPORTANT
@@ -20,6 +20,7 @@ public class GameDataConverter {
         game.initShipsCells();
         game.initSectorsCells();
         game.initPlayerIterator();
+        game.setName(name);
         return game;
     }
 }

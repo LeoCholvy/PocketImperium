@@ -278,7 +278,7 @@ public class CLI implements IOHandler {
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
             System.out.println(i+"Player " + player.getName() + ", chose a cell to exterminate");
             System.out.println(i+"You have " + nSystem + " attacks left, write -1 to stop");
-            System.out.println(i+"You can't use the same ship twice in a round, and you can only exterminate cells once per round");
+            System.out.println(i+"Remember : you can't use the same ship twice in a round, and you can only exterminate cells once per round");
             int cellId, id, nShips, max;
             while (true) {
                 try {
@@ -395,5 +395,29 @@ public class CLI implements IOHandler {
             return score(id);
         }
         return sectorId;
+    }
+
+    public void displayWinner(int[] winnersIds) {
+        System.out.println("---------------------Congratulations !---------------------");
+        for (int id : winnersIds) {
+            System.out.println("Player " + Game.getInstance().getPlayer(id).getName() + " win !");
+        }
+        // System.out.println("-----------------------------------------------------------");
+        displayScore();
+    }
+
+    public void displayDraw() {
+        System.out.println("---------------------Congratulations !---------------------");
+        System.out.println("It's a draw !");
+        // System.out.println("-----------------------------------------------------------");
+        displayScore();
+    }
+
+    private void displayScore() {
+        System.out.println("-----------------------Scoreboard--------------------------");
+        for (Player player : Game.getInstance().getPlayers()) {
+            System.out.println("Player " + player.getName() + " : " + player.getScore());
+        }
+        System.out.println("-----------------------------------------------------------");
     }
 }

@@ -18,9 +18,6 @@ import java.util.*;
 public class Main {
     public static Game game;
     public static void main(String[] args) throws RemoteException {
-        if (args.length == 0) {
-            IOHandler io = new CLI();
-        }
 
         // DEBUG MODE
         if (args.length >= 1 && args[0].equals("filetest")) {
@@ -32,7 +29,7 @@ public class Main {
             // Game game = Game.getInstance(new CLI(), DataManipulator.loadSave("test"));
             //
             // DataManipulator.saveGame("test2", GameDataConverter.toJson(game));
-            Game game = Game.getInstance(new CLI(), DataManipulator.loadSave("test"));
+            Game game = Game.getInstance(new CLI(), DataManipulator.loadSave("test"), "test");
             game.playRound();
             return;
         }
@@ -63,10 +60,8 @@ public class Main {
             IOHandler io = new CLI();
             // Game game = Game.getInstance(io, new Player[]{new Player("Dodo", 0), new Player("Leo", 1)});
             // game.init();
-            Game game = Game.getInstance(io, DataManipulator.loadSave("test"));
-            if (game.playRound()) {
-                java.lang.System.out.println("dfguigqslfusqlufdglishdlufhsdluifhu------------------------------------------------------------------------------------------------------------------------------------");
-            }
+            Game game = Game.getInstance(io, DataManipulator.loadSave("test"), "stonks");
+            game.playGame();
             java.lang.System.out.println(GameDataConverter.toJson(game));
             // java.lang.System.out.println(game.getInput().score(0));
 
@@ -77,6 +72,7 @@ public class Main {
         }
 
         // NORMAL MODE
-
+        IOHandler io = new CLI();
+        return;
     }
 }

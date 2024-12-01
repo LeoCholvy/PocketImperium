@@ -12,4 +12,6 @@ public interface IOHandler {
     public int[][][] explore(int playerId, int nFleet);
     public int[][] exterminate(int playerId, int nFleet);
     public int score(int id);
+    public void displayWinner(int[] winnersIds);
+    public void displayDraw();
 }

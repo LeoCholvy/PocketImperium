@@ -136,7 +136,7 @@ public class Player {
     /**
      * Score the player based on the sector ID.
      */
-    public void score () {
+    public void score (int multiplier) {
         int SectorId = Game.getInstance().getInput().score(this.getId());
         // TODO : check if the input is valid
         Sector sector = Game.getInstance().getArea().getSector(SectorId);
@@ -148,10 +148,13 @@ public class Player {
         for (Cell cell : sector.getCells()) {
             System system = cell.getSystem();
             if (system != null && cell.getOwner() == this) {
-                this.score += system.getLevel();
+                this.score += system.getLevel() * multiplier;
             }
         }
         sector.setUsed(true);
+    }
+    public void score() {
+        this.score(1);
     }
 
     /**
@@ -468,6 +471,7 @@ public class Player {
                 return false;
             }
         }
+        this.setDead(true);
         return true;
     }
 }
