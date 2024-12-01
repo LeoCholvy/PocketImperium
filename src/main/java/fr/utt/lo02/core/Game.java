@@ -92,6 +92,7 @@ public class Game {
      * Only call this method when recreating the game from JSON data.
      */
     public void initNeighbors() {
+        // FIXME : this method should be in the Area class
         this.area.setNeighbors();
     }
 
@@ -195,6 +196,7 @@ public class Game {
      * Reset the sectors to their initial state.
      */
     private void resetSectors() {
+        // FIXME : this method should be in the Area class
         for (Sector sector : this.area.getSectors()) {
             sector.setUsed(false);
         }
@@ -365,8 +367,17 @@ public class Game {
         }
 
         // TODO : check if the game should end (or if a player died)
-        //NOTE We should get the order from the config file
-        return false;
+        // NOTE We should get the order from the config file
+
+        this.checkPlayersDeath();
+
+        return !(this.getAlivePlayers().length > 1);
+    }
+
+    private void checkPlayersDeath() {
+        for (Player player : this.getAlivePlayers()) {
+            player.checkDeath();
+        }
     }
 
     /**
@@ -478,6 +489,23 @@ public class Game {
      */
     public boolean playGame() {
         return false;
+        // while (true) {
+        //     if (this.playRound()) {
+        //         break;
+        //     }
+        // }
+        // this.endGame();
+    }
+
+    private void endGame() {
+        // if (this.getAlivePlayers().length == 1) {
+        // //     he is the winner
+        // } else if (this.getAlivePlayers().length == 0) {
+        // //     no winner
+        // } else {
+        // //     score the sectors
+        // //     then chose a winner !
+        // }
     }
 
     /**

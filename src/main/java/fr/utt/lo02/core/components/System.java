@@ -17,4 +17,10 @@ public class System {
     public int getLevel() {
         return this.level;
     }
+    public boolean isUsed() {
+        return this.used;
+    }
+    public void setUsed(boolean used) {
+        this.used = used;
+    }
 }

@@ -240,10 +240,17 @@ public class Player {
                 }
             }
             for (int[] move : fleetMove) {
+                try {
+                    area.getCell(move[0]);
+                    area.getCell(move[2]);
+                } catch (Exception e) {
+                    Game.getInstance().getInput().displayError("Invalid input, a cell doesn't exist");
+                    explore(nFleet);
+                    return;
+                }
                 if (move.length != 3) {
                     Game.getInstance().getInput().displayError("Invalid input");
                     explore(nFleet);
-                    return;
                 }
                 Integer distance = area.getCell(move[0]).distance(area.getCell(move[2]), 2);
                 if (distance == null || distance != 1) {
@@ -253,7 +260,7 @@ public class Player {
                 }
             }
         }
-        
+
         this.resetFleet();
         Map<Cell, Ship[]> fleets = new HashMap<>();
         // Area area = Game.getInstance().getArea();
@@ -310,9 +317,94 @@ public class Player {
      * @param nSystem the number of systems to exterminate
      */
     public void exterminate(int nSystem) {
+        Game game = Game.getInstance();
+        Area area = game.getArea();
+        int[][] input = game.getInput().exterminate(this.getId(), nSystem);
         // TODO : check if the input is valid
+        if (input == null) {
+            game.getInput().displayError("Invalid input");
+            exterminate(nSystem);
+            return;
+        }
+        if (input.length > nSystem) {
+            game.getInput().displayError("You can't extermine more than " + nSystem + " systems");
+            exterminate(nSystem);
+            return;
+        }
+        for (int[] i : input) {
+            if (i.length % 2 != 1) {
+                game.getInput().displayError("Invalid input");
+                exterminate(nSystem);
+                return;
+            }
+            try {
+                area.getCell(i[0]);
+                for (int j = 1; j<i.length; j+=2) {
+                    area.getCell(i[j]);
+                }
+            } catch (Exception e) {
+                game.getInput().displayError("Invalid input, a cell doesn't exist");
+                exterminate(nSystem);
+                return;
+            }
+        }
         // TODO : exterminate
+        this.resetFleet();
+        Game.getInstance().getArea().resetSystems();
+        Map<Cell, List<Ship>> newShipsPos = new HashMap<>();
+        newShipsPos.put(null, new ArrayList<>());
+        for (int[] currentInvasion : input) {
+            Cell attackedCell = area.getCell(currentInvasion[0]);
+            newShipsPos.put(attackedCell, new ArrayList<>());
 
+
+            if (attackedCell.getOwner() == null || attackedCell.getOwner() == this) {
+                game.getInput().displayError("Invalid input, you need to attack an enemies cell");
+                exterminate(nSystem);
+                return;
+            }
+
+            List<Ship> attackingShips = new ArrayList<>();
+            List<Ship> attackedShips = new ArrayList<>(Arrays.asList(attackedCell.getShips()));
+
+            for (int i = 1; i<currentInvasion.length; i+=2 ) {
+                Cell c = area.getCell(currentInvasion[i]);
+                Ship[] ships = c.getAvailableShips(currentInvasion[i+1]);
+                // NOTE : we assume i+1 exist because we tested currentInvasion (size is even)
+                if (ships == null) {
+                    game.getInput().displayError("Invalid input, you don't have enough ships");
+                    exterminate(nSystem);
+                    return;
+                }
+                attackingShips.addAll(List.of(ships));
+            }
+
+            Ship temp;
+            while (!(attackedShips.isEmpty() && attackingShips.isEmpty())) {
+                if (attackingShips.isEmpty()) {
+                    temp = attackedShips.removeFirst();
+                    temp.setUsed(true);
+                    newShipsPos.get(attackedCell).add(temp);
+                } else if (attackedShips.isEmpty()) {
+                    temp = attackingShips.removeFirst();
+                    temp.setUsed(true);
+                    newShipsPos.get(attackedCell).add(temp);
+                } else {
+                    temp = attackingShips.removeFirst();
+                    temp.setUsed(true);
+                    newShipsPos.get(null).add(temp);
+                    temp = attackedShips.removeFirst();
+                    temp.setUsed(true);
+                    newShipsPos.get(null).add(temp);
+                }
+            }
+        }
+
+        for (Cell cell : newShipsPos.keySet()) {
+            for (Ship ship : newShipsPos.get(cell)) {
+                ship.setCell(cell);
+            }
+        }
         // TODO : check if a player is dead
             // if all are dead : end the game
     }
@@ -368,5 +460,14 @@ public class Player {
             return next.next();
         }
         return next;
+    }
+
+    public boolean checkDeath() {
+        for (Ship ship : this.ships) {
+            if (ship.getCell() != null) {
+                return false;
+            }
+        }
+        return true;
     }
 }

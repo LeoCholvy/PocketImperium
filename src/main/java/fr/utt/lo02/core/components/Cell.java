@@ -148,4 +148,10 @@ public class Cell {
             ships[i].setCell(null);
         }
     }
+
+    public void resetSystems() {
+        if (this.system != null) {
+            this.system.setUsed(false);
+        }
+    }
 }

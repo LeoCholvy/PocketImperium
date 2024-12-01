@@ -175,4 +175,10 @@ public void setSectors() {
         }
         throw new IllegalGameStateExeceptions("Sector not found");
     }
+
+    public void resetSystems() {
+        for (Cell cell : this.grid) {
+            cell.resetSystems();
+        }
+    }
 }

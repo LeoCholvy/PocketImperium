@@ -13,6 +13,7 @@ import java.lang.reflect.Executable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class CLI implements IOHandler {
     public static void displayGameState() {
@@ -264,9 +265,104 @@ public class CLI implements IOHandler {
         return result;
     }
 
-    public int[][] exterminate(int playerId, int nFleet) {
+    public int[][] exterminate(int playerId, int nSystem) {
         // TODO : INPUT : exterminate
-        return new int[0][0];
+        List<List<Integer>> input = new ArrayList<>();
+        Game game = Game.getInstance();
+        Player player = game.getPlayer(playerId);
+        Area area = game.getArea();
+        displayGameState();
+        System.out.println("Player " + player.getName() + ", you have " + nSystem + " you can exterminate");
+        for (int i = 0; i < nSystem; i++) {
+            List<Integer> currentAttack = new ArrayList<>();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            System.out.println(i+"Player " + player.getName() + ", chose a cell to exterminate");
+            System.out.println(i+"You have " + nSystem + " attacks left, write -1 to stop");
+            System.out.println(i+"You can't use the same ship twice in a round, and you can only exterminate cells once per round");
+            int cellId, id, nShips, max;
+            while (true) {
+                try {
+                    System.out.print(i + ">>>");
+                    cellId = Integer.parseInt(reader.readLine());
+                    if (cellId == -1) {
+                        break;
+                    }
+                    // check all the i[0] of input and if on of them is equal to cellId, throw an error
+                    int finalCellId = cellId;
+                    if (input.stream().anyMatch(list -> list.get(0) == finalCellId)) {
+                        throw new IllegalGameStateExeceptions("You can't exterminate the same cell twice in a round");
+                    }
+                    if (area.getCell(cellId).getOwner() == player || area.getCell(cellId).getOwner() == null) {
+                        throw new IllegalGameStateExeceptions("You can't exterminate this cell, it need to be controled by another player");
+                    }
+                    break;
+                } catch (IllegalGameStateExeceptions e) {
+                    displayError(e.getMessage());
+                    continue;
+                } catch (Exception e) {
+                    displayError("Invalid input, please enter a number");
+                    continue;
+                }
+            }
+            if (cellId == -1) {
+                break;
+            }
+            while (true) {
+                System.out.println(i+"Choose a cell from where you want to attack");
+                try {
+                    System.out.print(i + ">>>");
+                    id = Integer.parseInt(reader.readLine());
+                    if (id == -1) {
+                        break;
+                    }
+                    if (area.getCell(cellId).distance(area.getCell(id), 2) == null) {
+                        throw new IllegalGameStateExeceptions("The destination cell is not a neighbor of the starting cell");
+                    }
+                    if (area.getCell(id).getOwner() != player) {
+                        throw new IllegalGameStateExeceptions("You don't have ship on this cell");
+                    }
+                } catch (IllegalGameStateExeceptions e) {
+                    displayError(e.getMessage());
+                    continue;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    displayError("Invalid input, please enter a number");
+                    continue;
+                }
+
+
+                max = area.getCell(id).getShips().length;
+                System.out.println(i+"How many ships do you want to use for this attack ? (max " + max + ")");
+                try {
+                    System.out.print(i + ">>>");
+                    nShips = Integer.parseInt(reader.readLine());
+                    if (nShips == -1) {
+                        break;
+                    }
+                    if (area.getCell(id).getAvailableShips(nShips) == null) {
+                        throw new IllegalGameStateExeceptions("You don't have enough ships on this cell");
+                    }
+                } catch (IllegalGameStateExeceptions e) {
+                    displayError(e.getMessage());
+                    continue;
+                } catch (Exception e) {
+                    displayError("Invalid input, please enter a number");
+                    continue;
+                }
+                if (currentAttack.size() == 0) {
+                    currentAttack.add(cellId);
+                }
+                currentAttack.add(id);
+                currentAttack.add(nShips);
+            }
+            input.add(currentAttack);
+        }
+        // convert list<list<int>> to int[][]
+        int[][] result = new int[input.size()][];
+        for (int i = 0; i < input.size(); i++) {
+            result[i] = input.get(i).stream().mapToInt(Integer::intValue).toArray();
+        }
+        return result;
     }
 
     public int score(int id) {
