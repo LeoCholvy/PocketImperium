@@ -58,9 +58,8 @@ public class Main {
         // }
         if (args.length >= 1) {
             IOHandler io = new CLI();
-            // Game game = Game.getInstance(io, new Player[]{new Player("Dodo", 0), new Player("Leo", 1)});
-            // game.init();
-            Game game = Game.getInstance(io, DataManipulator.loadSave("test"), "stonks");
+            Game game = Game.getInstance(io, new Player[]{new Player("Dodo", 0), new Player("Leo", 1)});
+            // Game game = Game.getInstance(io, DataManipulator.loadSave("test"), "stonks");
             game.playGame();
             java.lang.System.out.println(GameDataConverter.toJson(game));
             // java.lang.System.out.println(game.getInput().score(0));

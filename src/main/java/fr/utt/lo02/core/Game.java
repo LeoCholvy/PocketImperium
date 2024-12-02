@@ -494,6 +494,7 @@ public class Game {
      * @return false
      */
     public boolean playGame() {
+        this.init();
         while (!this.playRound()) {
             // do nothing
         }
