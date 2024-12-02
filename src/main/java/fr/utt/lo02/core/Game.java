@@ -34,11 +34,11 @@ public class Game {
      * @param players the array of players in the game
      * @throws IllegalStateException if an instance of the game already exists
      */
-    private Game(IOHandler input, Player[] players) {
+    private Game(Player[] players) {
         if (instance != null) {
             throw new IllegalStateException("Game already created");
         }
-        this.input = input;
+        // this.input = input;
         this.players = players;
         this.area = new Area();
         instance = this;
@@ -60,6 +60,9 @@ public class Game {
      * @return the instance of the game
      */
     public static Game getInstance() {
+        if (instance == null) {
+            throw new IllegalGameStateExeceptions("Game not created");
+        }
         return instance;
     }
 
@@ -69,11 +72,11 @@ public class Game {
      * @return the instance of the game
      * @throws IllegalGameStateExeceptions if an instance of the game already exists
      */
-    public static Game getInstance(IOHandler input, Player[] players) {
+    public static Game getInstance(Player[] players) {
         if (instance != null) {
             throw new IllegalGameStateExeceptions("Game already created");
         }
-        return new Game(input, players);
+        return new Game(players);
     }
     /**
      * Get the instance of the game.
@@ -84,10 +87,14 @@ public class Game {
      * @see Game#initIO(IOHandler)
      * @see IOHandler
      */
-    public static Game getInstance(IOHandler io, String json, String name) {
+    public static Game getInstance(String json, String name) {
         Game game = GameDataConverter.fromJson(json, name);
-        game.initIO(io);
+        // game.initIO(io);
         return game;
+    }
+
+    public static Game getInstance(String json) {
+        return GameDataConverter.fromJson(json, null);
     }
 
     /**
@@ -168,7 +175,7 @@ public class Game {
      * Initialize the game.
      * Chooses the starting player randomly and resets the sectors.
      */
-    public void init() {
+    private void init() {
         // chose the starting player randomly
         // we assume no player is dead
         this.startingPlayerIndex = (int) (Math.random() * players.length);
@@ -453,7 +460,7 @@ public class Game {
      * Play a round of the game.
      * @return true if the game should end, false otherwise
      */
-    public boolean playRound() {
+    private boolean playRound() {
         this.round++;
         HashMap<Integer, Command[]> orders = this.phase1();
         if (this.phase2(orders)) {
@@ -494,7 +501,9 @@ public class Game {
      * @return false
      */
     public boolean playGame() {
-        this.init();
+        if (this.round == 0) {
+            this.init();
+        }
         while (!this.playRound()) {
             // do nothing
         }
@@ -547,7 +556,7 @@ public class Game {
      * Initialize the IO handler.
      * @param io the IO handler to initialize
      */
-    private void initIO(IOHandler io) {
+    public void initIO(IOHandler io) {
         this.input = io;
     }
 
@@ -563,5 +572,9 @@ public class Game {
     }
     public String getName() {
         return this.name;
+    }
+
+    public List<Player> getHumanPlayers() {
+        return Stream.of(this.players).filter(Player::isHuman).toList();
     }
 }

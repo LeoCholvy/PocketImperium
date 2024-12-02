@@ -26,6 +26,8 @@ public class Player {
     @Expose
     private boolean dead = false;
     private Player nextPlayer;
+    @Expose
+    private boolean isAI = false;
 
     /**
      * Constructor for the Player class.
@@ -45,6 +47,11 @@ public class Player {
         for (int i = 0; i < nShips; i++) {
             this.ships[i] = new Ship(i);
         }
+    }
+
+    public Player(String name, int id, boolean isAI) {
+        this(name, id);
+        this.isAI = isAI;
     }
 
     /**
@@ -473,5 +480,9 @@ public class Player {
         }
         this.setDead(true);
         return true;
+    }
+
+    public boolean isHuman() {
+        return !this.isAI;
     }
 }

@@ -5,7 +5,7 @@ import fr.utt.lo02.core.components.Command;
 import java.util.HashMap;
 
 public interface IOHandler {
-    public void displayError(String message);
+    public void displayError(String message); //FIXME : add the playerId
     public int getStartingCellId(int playerId);
     public HashMap<Integer, Command[]> getCommandOrders();
     public int[][] expand(int playerId, int nShips);

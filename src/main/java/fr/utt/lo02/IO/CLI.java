@@ -16,13 +16,35 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class CLI implements IOHandler {
-    public static void displayGameState() {
+
+    private Game game;
+
+    /**
+     * Default constructor
+     * You can use it right after creating the game
+     * Remember : the game need to be initialized with the IOHandler before starting !
+     * @see Game#initIO(IOHandler)
+     */
+    public CLI() {
+        this.game = null;
+    }
+    public CLI(Game game) {
+        this.game = game;
+    }
+    public void setGameInstance(Game game) {
+        this.game = game;
+        if (this.game == null) {
+            throw new IllegalGameStateExeceptions("Error while setting the game instance");
+        }
+    }
+
+    public void displayGameState() {
         System.out.println("-----------------------------------------------------------");
-        System.out.println(GameDataConverter.toJson(Game.getInstance()));
+        System.out.println(GameDataConverter.toJson(this.game));
         System.out.println("-----------------------------------------------------------");
     }
     public int getStartingCellId(int playerid) {
-        Player player = Game.getInstance().getPlayer(playerid);
+        Player player = this.game.getPlayer(playerid);
         displayGameState();
         System.out.println("Player " + player.getName() + ", chose a cell to place your ship");
         System.out.println("You must chose a cell with a level 1 system in an unoccupied sector");
@@ -42,7 +64,10 @@ public class CLI implements IOHandler {
     public HashMap<Integer, Command[]> getCommandOrders() {
         HashMap<Integer, Command[]> orders = new HashMap<>();
         // ask each player their order
-        for (Player player : Game.getInstance().getAlivePlayers()) {
+        for (Player player : this.game.getAlivePlayers()) {
+            // TODO : check if the player is human
+
+
             System.out.println("Player " + player.getName() + ", enter your command");
             System.out.println("1. Expand");
             System.out.println("2. Explore");
@@ -57,6 +82,7 @@ public class CLI implements IOHandler {
                 // contains 1,2,3 and no duplicate
                 if (input.length() != 3 || !input.contains("1") || !input.contains("2") || !input.contains("3")) {
                     displayError("Invalid input, please enter a valid command");
+                    // FIXME : need to ask the player again and not every player
                     return getCommandOrders();
                 }
                 for (int i = 0; i < 3; i++) {
@@ -79,7 +105,7 @@ public class CLI implements IOHandler {
 
     public int[][] expand(int playerId, int nShips) {
         ArrayList<int[]> ships = new ArrayList<>();
-        Player player = Game.getInstance().getPlayer(playerId);
+        Player player = this.game.getPlayer(playerId);
         // displayGameState();
         int nShipsMax = Math.min(nShips, player.getNumberAvailableShips());
         System.out.println("Player " + player.getName() + ", you have " + nShipsMax + " ships to expand");
@@ -126,9 +152,9 @@ public class CLI implements IOHandler {
     public int[][][] explore(int playerId, int nFleet) {
         // FIXME : let the player choose to do nothing with -1
         List<List<int[]>> input = new ArrayList<>();
-        Player player = Game.getInstance().getPlayer(playerId);
+        Player player = this.game.getPlayer(playerId);
         displayGameState();
-        Area area = Game.getInstance().getArea();
+        Area area = this.game.getArea();
         System.out.println("Player " + player.getName() + ", you have " + nFleet + " you can move");
         for (int i = 0; i < nFleet; i++) {
             List<int[]> fleet = new ArrayList<>();
@@ -280,7 +306,7 @@ public class CLI implements IOHandler {
     public int[][] exterminate(int playerId, int nSystem) {
         // TODO : INPUT : exterminate
         List<List<Integer>> input = new ArrayList<>();
-        Game game = Game.getInstance();
+        Game game = this.game;
         Player player = game.getPlayer(playerId);
         Area area = game.getArea();
         displayGameState();
@@ -378,12 +404,12 @@ public class CLI implements IOHandler {
     }
 
     public int score(int id) {
-        List<Sector> scorableSectors = Game.getInstance().getScorablesSectors();
+        List<Sector> scorableSectors = this.game.getScorablesSectors();
         System.out.println("Scorable sectors : ");
         for (Sector sector : scorableSectors) {
             System.out.println("Id: " + sector.getId() + ", type: " + sector.getType());
         }
-        System.out.println("Player " + Game.getInstance().getPlayer(id).getName() + ", chose a sector to score");
+        System.out.println("Player " + this.game.getPlayer(id).getName() + ", chose a sector to score");
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         int sectorId;
         try {
@@ -412,7 +438,7 @@ public class CLI implements IOHandler {
     public void displayWinner(int[] winnersIds) {
         System.out.println("---------------------Congratulations !---------------------");
         for (int id : winnersIds) {
-            System.out.println("Player " + Game.getInstance().getPlayer(id).getName() + " win !");
+            System.out.println("Player " + this.game.getPlayer(id).getName() + " win !");
         }
         // System.out.println("-----------------------------------------------------------");
         displayScore();
@@ -427,7 +453,7 @@ public class CLI implements IOHandler {
 
     private void displayScore() {
         System.out.println("-----------------------Scoreboard--------------------------");
-        for (Player player : Game.getInstance().getPlayers()) {
+        for (Player player : this.game.getPlayers()) {
             System.out.println("Player " + player.getName() + " : " + player.getScore());
         }
         System.out.println("-----------------------------------------------------------");
