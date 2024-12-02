@@ -177,6 +177,9 @@ public class CLI implements IOHandler {
                 try {
                     System.out.print(i + ">>>");
                     destCellId = Integer.parseInt(reader.readLine());
+                    if (destCellId == -1) {
+                        break;
+                    }
                     if (area.getCell(destCellId).getOwner() != player && area.getCell(destCellId).getOwner() != null) {
                         throw new IllegalGameStateExeceptions("This cell is already owned by another player");
                     }
@@ -191,6 +194,9 @@ public class CLI implements IOHandler {
                     displayError("Invalid input, please enter a number");
                     continue;
                 }
+            }
+            if (destCellId == -1) {
+                break;
             }
             fleet.add(new int[]{startCellId, nShips, destCellId});
 
@@ -227,6 +233,9 @@ public class CLI implements IOHandler {
                     try {
                         System.out.print(i + ">>>");
                         destCellId2 = Integer.parseInt(reader.readLine());
+                        if (destCellId2 == -1) {
+                            break;
+                        }
                         if (area.getCell(destCellId2).getOwner() != player && area.getCell(destCellId2).getOwner() != null) {
                             throw new IllegalGameStateExeceptions("This cell is already owned by another player");
                         }
@@ -241,6 +250,9 @@ public class CLI implements IOHandler {
                         displayError("Invalid input, please enter a number");
                         continue;
                     }
+                }
+                if (destCellId2 == -1) {
+                    break;
                 }
                 fleet.add(new int[]{destCellId,nShips2, destCellId2});
             }
