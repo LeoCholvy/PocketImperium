@@ -8,6 +8,7 @@ public class Sector {
     // private static int idCounter = 0;
     @Expose
     private final int id;
+    @Expose
     private boolean used;
     @Expose
     private int[] cellIds;

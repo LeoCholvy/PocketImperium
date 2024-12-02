@@ -16,6 +16,7 @@ public class Cell {
     private Cell[] neighbors;
     @Expose
     private int[] neighborIds;
+    @Expose
     private boolean used = false;
     public Cell(int id) {
         this.id = id;

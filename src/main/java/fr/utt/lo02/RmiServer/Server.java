@@ -237,8 +237,7 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
 
     public void displayWinner(int[] winnersIds) {
         this.updateClientGameInstance();
-        for (int id : winnersIds) {
-            Player p = this.game.getPlayer(id);
+        for (Player p : this.clientsRemote.keySet()) {
             while (true) {
                 try {
                     this.clientsRemote.get(p).displayWinner(winnersIds);
