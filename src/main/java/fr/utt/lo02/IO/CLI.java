@@ -58,7 +58,7 @@ public class CLI implements IOHandler {
         }
     }
     public void displayError(String message) {
-        System.out.println("Error: " + message);
+        System.out.println("\u001B[31mError: " + message + "\u001B[0m");
     }
 
     public HashMap<Integer, Command[]> getCommandOrders() {

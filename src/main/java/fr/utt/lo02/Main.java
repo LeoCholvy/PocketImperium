@@ -4,6 +4,7 @@ import fr.utt.lo02.IO.*;
 import fr.utt.lo02.RmiServer.Client;
 import fr.utt.lo02.RmiServer.Server;
 import fr.utt.lo02.core.Game;
+import fr.utt.lo02.core.Player;
 import fr.utt.lo02.data.DataManipulator;
 
 import java.rmi.RemoteException;
@@ -50,8 +51,8 @@ public class Main {
         //     return;
         // }
         if (args.length == 1) {
-            // Game game = Game.getInstance(new Player[]{new Player("Dodo", 0), new Player("Leo", 1)});
-            Game game = Game.getInstance(DataManipulator.loadSave("test"), "stonks");
+            Game game = Game.getInstance(new Player[]{new Player("Dodo", 0), new Player("Leo", 1)}, "stonks");
+            // Game game = Game.getInstance(DataManipulator.loadSave("test"), "stonks");
             game.initIO(new CLI(game));
             // game.playGame();
             // java.lang.System.out.println(GameDataConverter.toJson(game));

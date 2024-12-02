@@ -72,11 +72,13 @@ public class Game {
      * @return the instance of the game
      * @throws IllegalGameStateExeceptions if an instance of the game already exists
      */
-    public static Game getInstance(Player[] players) {
+    public static Game getInstance(Player[] players, String name) {
         if (instance != null) {
             throw new IllegalGameStateExeceptions("Game already created");
         }
-        return new Game(players);
+        Game game = new Game(players);
+        game.setName(name);
+        return game;
     }
     /**
      * Get the instance of the game.
@@ -507,7 +509,9 @@ public class Game {
         while (!this.playRound()) {
             // do nothing
         }
-        DataManipulator.saveGame(this.getName(), GameDataConverter.toJson(this));
+        if (this.getName() != null) {
+            DataManipulator.saveGame(this.getName(), GameDataConverter.toJson(this));
+        }
         this.endGame();
         return false;
     }
