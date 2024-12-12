@@ -14,66 +14,83 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+/**
+ * The DataManipulator class provides methods to load and manipulate game data properties and save files.
+ */
 public class DataManipulator {
     private static Properties mapProperties = loadMapProperties();
     private static Properties configProperties = loadConfig();
     private static Properties SectorProperties = loadSectorProperties();
+
+    /**
+     * Gets the map properties.
+     * @return the map properties
+     */
     public static Properties getMapProperties() {
         return mapProperties;
     }
+
+    /**
+     * Gets the configuration properties.
+     * @return the configuration properties
+     */
     public static Properties getConfigProperties() {
         return configProperties;
     }
 
     private static String defaultMapProperties =
             "0=14,15,19,24,21,26,23,28,32,33\n" +
-                    "1=2,7\n" +
-                    "2=1,3,7,8\n" +
-                    "3=2,4,8,9\n" +
-                    "4=3,5,9,10\n" +
-                    "5=4,6,10,11\n" +
-                    "6=5,11\n" +
-                    "7=1,2,8,12,13\n" +
-                    "8=2,3,7,9,13,14\n" +
-                    "9=3,4,8,10,14,15\n" +
-                    "10=4,5,9,11,15,16\n" +
-                    "11=5,6,10,16,17\n" +
-                    "12=7,13,18\n" +
-                    "13=7,8,12,14,18,19\n" +
-                    "14=8,9,13,15,19,0\n" +
-                    "15=9,10,14,16,0,24\n" +
-                    "16=10,11,15,17,24,25\n" +
-                    "17=11,16,25\n" +
-                    "18=12,13,19,20,21\n" +
-                    "19=13,14,18,0,21\n" +
-                    "20=18,21,22\n" +
-                    "21=18,19,20,22,23,0\n" +
-                    "22=20,21,23,30,31\n" +
-                    "23=21,22,31,32,0\n" +
-                    "24=15,16,25,26,0\n" +
-                    "25=16,17,24,26,27\n" +
-                    "26=24,25,27,28,0,29\n" +
-                    "27=25,26,29\n" +
-                    "28=26,29,33,34,0\n" +
-                    "29=26,27,28,34,35\n" +
-                    "30=22,31,36\n" +
-                    "31=22,23,30,32,36,37\n" +
-                    "32=23,31,33,37,38,0\n" +
-                    "33=0,28,32,38,39\n" +
-                    "34=28,29,33,35,39,40\n" +
-                    "35=29,34,40\n" +
-                    "36=30,31,37,41,42\n" +
-                    "37=31,32,36,38,42,43\n" +
-                    "38=32,33,37,39,43,44\n" +
-                    "39=33,34,38,40,44,45\n" +
-                    "40=34,35,39,45,46\n" +
-                    "41=36,42\n" +
-                    "42=36,37,41,43\n" +
-                    "43=37,38,42,44\n" +
-                    "44=38,39,43,45\n" +
-                    "45=39,40,44,46\n" +
-                    "46=40,45";
+            "1=2,7\n" +
+            "2=1,3,7,8\n" +
+            "3=2,4,8,9\n" +
+            "4=3,5,9,10\n" +
+            "5=4,6,10,11\n" +
+            "6=5,11\n" +
+            "7=1,2,8,12,13\n" +
+            "8=2,3,7,9,13,14\n" +
+            "9=3,4,8,10,14,15\n" +
+            "10=4,5,9,11,15,16\n" +
+            "11=5,6,10,16,17\n" +
+            "12=7,13,18\n" +
+            "13=7,8,12,14,18,19\n" +
+            "14=8,9,13,15,19,0\n" +
+            "15=9,10,14,16,0,24\n" +
+            "16=10,11,15,17,24,25\n" +
+            "17=11,16,25\n" +
+            "18=12,13,19,20,21\n" +
+            "19=13,14,18,0,21\n" +
+            "20=18,21,22\n" +
+            "21=18,19,20,22,23,0\n" +
+            "22=20,21,23,30,31\n" +
+            "23=21,22,31,32,0\n" +
+            "24=15,16,25,26,0\n" +
+            "25=16,17,24,26,27\n" +
+            "26=24,25,27,28,0,29\n" +
+            "27=25,26,29\n" +
+            "28=26,29,33,34,0\n" +
+            "29=26,27,28,34,35\n" +
+            "30=22,31,36\n" +
+            "31=22,23,30,32,36,37\n" +
+            "32=23,31,33,37,38,0\n" +
+            "33=0,28,32,38,39\n" +
+            "34=28,29,33,35,39,40\n" +
+            "35=29,34,40\n" +
+            "36=30,31,37,41,42\n" +
+            "37=31,32,36,38,42,43\n" +
+            "38=32,33,37,39,43,44\n" +
+            "39=33,34,38,40,44,45\n" +
+            "40=34,35,39,45,46\n" +
+            "41=36,42\n" +
+            "42=36,37,41,43\n" +
+            "43=37,38,42,44\n" +
+            "44=38,39,43,45\n" +
+            "45=39,40,44,46\n" +
+            "46=40,45";
 
+    /**
+     * Writes the default map properties to a file.
+     * @return the default map properties
+     */
     private static Properties writeDefaultProperties() {
         String path = "src/ressources/map.properties";
         Properties properties = new Properties();
@@ -92,6 +109,10 @@ public class DataManipulator {
         return properties;
     }
 
+    /**
+     * Loads the map properties from a file.
+     * @return the map properties
+     */
     private static Properties loadMapProperties() {
         String path = "src/ressources/map.properties";
         Properties properties = new Properties();
@@ -139,6 +160,10 @@ public class DataManipulator {
         return properties;
     }
 
+    /**
+     * Loads the configuration properties from a file.
+     * @return the configuration properties
+     */
     private static Properties loadConfig() {
         Properties properties = new Properties();
         try (FileInputStream input = new FileInputStream("src/ressources/config.properties")) {
@@ -157,7 +182,10 @@ public class DataManipulator {
         return properties;
     }
 
-
+    /**
+     * Gets the list of save files.
+     * @return a set of save file names
+     */
     public static Set<String> getSavesList() {
         // read all files names in saves folder
         File folder = new File("src/ressources/saves");
@@ -176,6 +204,12 @@ public class DataManipulator {
         }
         return saves;
     }
+
+    /**
+     * Loads a save file.
+     * @param name the name of the save file
+     * @return the content of the save file
+     */
     public static String loadSave(String name) {
         File file = new File("src/ressources/saves/" + name + ".json");
         if (file.exists()) {
@@ -192,6 +226,13 @@ public class DataManipulator {
         }
         throw new IllegalGameStateExeceptions("Save file not found");
     }
+
+    /**
+     * Saves the game state to a file.
+     * @param name the name of the save file
+     * @param json the game state in JSON format
+     * @return true if the save was successful, false otherwise
+     */
     public static boolean saveGame(String name, String json) {
         // if (getSavesList().contains(name)) {
         //     return false;
@@ -204,9 +245,18 @@ public class DataManipulator {
         return true;
     }
 
+    /**
+     * Gets the sector properties.
+     * @return the sector properties
+     */
     public static Properties getSectorProperties() {
         return SectorProperties;
     }
+
+    /**
+     * Loads the sector properties from a file.
+     * @return the sector properties
+     */
     public static Properties loadSectorProperties() {
         Properties properties = new Properties();
         try (FileInputStream input = new FileInputStream("src/ressources/sector.properties")) {
