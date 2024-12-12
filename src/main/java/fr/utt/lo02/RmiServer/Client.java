@@ -30,6 +30,7 @@ public class Client extends UnicastRemoteObject implements ClientRemote, Runnabl
     private void connectToServer() {
         try {
             // TODO ask the user for the server ip
+            // String ip = "192.168.1.82";
             String ip = "localhost";
             this.serverRemote = (ServerRemote) Naming.lookup("rmi://"+ip+":1099/PocketImperium");
             System.out.println("Connected to the server");
@@ -40,7 +41,7 @@ public class Client extends UnicastRemoteObject implements ClientRemote, Runnabl
             this.checkServerConnectionThread = new Thread(this);
             this.checkServerConnectionThread.start();
         } catch (Exception e) {
-            e.printStackTrace();
+            // e.printStackTrace();
             System.out.println("Error while connecting to the server");
             System.exit(1);
         }
@@ -57,6 +58,10 @@ public class Client extends UnicastRemoteObject implements ClientRemote, Runnabl
             }
         }
     }
+
+    // public void setCurrentAction(String action) throws RemoteException {
+    //
+    // }
 
     public String getUserName() throws RemoteException {
         // TODO ask the user for his name

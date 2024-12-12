@@ -10,6 +10,8 @@ public interface ClientRemote extends Remote {
     public String getUserName() throws RemoteException;
     public void setGameInstance(String json)throws RemoteException;
     public void setPlayerId(int playerId) throws RemoteException;
+    // public void setCurrentAction(String action) throws RemoteException;
+    // public void receiveMessage(int playerId, String message) throws RemoteException;
 
     public void displayError(String message) throws RemoteException; //FIXME : add the playerId
     public int getStartingCellId(int playerId) throws RemoteException;
