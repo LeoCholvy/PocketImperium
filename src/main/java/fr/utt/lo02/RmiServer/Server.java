@@ -19,7 +19,7 @@ import static java.lang.System.exit;
 public class Server extends UnicastRemoteObject implements ServerRemote, IOHandler {
     private String state = null;
     private Game game;
-    HashMap<Player, ClientRemote> clientsRemote;
+    private HashMap<Player, ClientRemote> clientsRemote;
 
 
     public void ping() throws RemoteException {
