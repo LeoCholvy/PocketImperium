@@ -86,7 +86,7 @@ public class Client extends UnicastRemoteObject implements ClientRemote, Runnabl
         this.game = Game.getInstance(json);
         // update gui
         // this.io = new CLI(this.game);
-        this.guiManager.getGUI().setGameInstance(this.game);
+        this.guiManager.setGameInstance(this.game, this);
 
         System.out.println("Game instance set");
         System.out.println(GameDataConverter.toJson(game));
@@ -94,8 +94,13 @@ public class Client extends UnicastRemoteObject implements ClientRemote, Runnabl
 
     public void setPlayerId(int playerId) throws RemoteException {
         this.playerId = playerId;
-        this.guiManager.getGUI().setPlayerId(playerId);
+        this.guiManager.setPlayerId(playerId);
         System.out.println("Player id set : " + playerId);
+    }
+
+    @Override
+    public void receiveMessage(int playerId, String message) throws RemoteException {
+        this.guiManager.getChatGUI().receiveMessage(playerId, message);
     }
 
     public void displayError(String message, int playerId) throws RemoteException {
@@ -174,6 +179,14 @@ public class Client extends UnicastRemoteObject implements ClientRemote, Runnabl
         }
         if (this.playerId != id) {
             throw new IllegalGameStateExeceptions("Wrong player id");
+        }
+    }
+
+    public void sendMessage(int playerId, String msg) {
+        try {
+            this.serverRemote.sendMessages(playerId, msg);
+        } catch (RemoteException _) {
+
         }
     }
 }

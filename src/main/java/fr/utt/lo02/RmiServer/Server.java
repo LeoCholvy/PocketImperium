@@ -53,6 +53,15 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
         }
     }
 
+    @Override
+    public void sendMessages(int playerId, String message) throws RemoteException {
+        for (Player p : this.clientsRemote.keySet()) {
+            if (p.getId() == playerId || this.clientsRemote.get(p) == null) {
+                continue;
+            }
+            this.clientsRemote.get(p).receiveMessage(playerId, message);
+        }
+    }
 
 
     public Server() throws RemoteException {
