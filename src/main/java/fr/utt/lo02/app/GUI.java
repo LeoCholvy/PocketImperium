@@ -4,21 +4,25 @@ import fr.utt.lo02.RmiServer.GUIIOHandler;
 import fr.utt.lo02.core.Game;
 import fr.utt.lo02.core.Player;
 import fr.utt.lo02.core.components.Command;
+import fr.utt.lo02.core.components.Sector;
 import fr.utt.lo02.data.DataManipulator;
 import fr.utt.lo02.data.GameDataConverter;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Array;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 enum State {
     FORM,
@@ -103,18 +107,14 @@ public class GUI implements GUIIOHandler {
         this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
-    public void setGameInstance(Game game) {
+    public synchronized void setGameInstance(Game game) {
         this.game = game;
         this.displayGame();
     }
 
-    private void displayCommand() {
-
-    }
-
-    public void displayGame() {
+    public synchronized void displayGame() {
         this.frame.getContentPane().removeAll();
-        this.state = State.GAME;
+        // this.state = State.GAME;
 
         // change frame name
         this.frame.setTitle("PocketImperium - "+this.username);
@@ -168,7 +168,7 @@ public class GUI implements GUIIOHandler {
         this.frame.setVisible(true);
     }
 
-    private void displayTopPanel(JPanel gamePanel) {
+    private synchronized void displayTopPanel(JPanel gamePanel) {
         if (this.inputState == InputState.IDLE || this.inputState == InputState.CELL) {
             String txt = this.textInfo[1];
             JLabel label = new JLabel(txt, SwingConstants.CENTER);
@@ -187,10 +187,130 @@ public class GUI implements GUIIOHandler {
             panelColor.setBackground(this.playersColor[this.playerId]);
             panelColor.setBounds(0,0, this.w, this.panelHeight);
             gamePanel.add(panelColor);
+        } else if (this.inputState == InputState.COMMAND) {
+            DefaultListModel<String> listModel = new DefaultListModel<>();
+            listModel.addElement("Expand");
+            listModel.addElement("Explore");
+            listModel.addElement("Exterminate");
+
+            JList<String> list = new JList<>(listModel);
+            list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            list.setDragEnabled(true);
+            list.setDropMode(DropMode.INSERT);
+
+            list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+            list.setVisibleRowCount(1);
+
+            list.setTransferHandler(new TransferHandler() {
+                private int draggedIndex = -1;
+
+                @Override
+                public int getSourceActions(JComponent c) {
+                    return MOVE;
+                }
+
+                @Override
+                protected Transferable createTransferable(JComponent c) {
+                    JList<?> source = (JList<?>) c;
+                    draggedIndex = source.getSelectedIndex(); // Stocke l'index de l'élément glissé
+                    return new StringSelection(source.getSelectedValue().toString());
+                }
+
+                @Override
+                public boolean canImport(TransferSupport support) {
+                    return support.isDataFlavorSupported(DataFlavor.stringFlavor);
+                }
+
+                @Override
+                public boolean importData(TransferSupport support) {
+                    if (!canImport(support)) {
+                        return false;
+                    }
+
+                    JList.DropLocation dropLocation = (JList.DropLocation) support.getDropLocation();
+                    int dropIndex = dropLocation.getIndex();
+
+                    try {
+                        String data = (String) support.getTransferable().getTransferData(DataFlavor.stringFlavor);
+
+                        JList<String> target = (JList<String>) support.getComponent();
+                        DefaultListModel<String> listModel = (DefaultListModel<String>) target.getModel();
+
+                        // Ajuste l'index si nécessaire
+                        if (draggedIndex < dropIndex) {
+                            dropIndex--; // L'élément glissé est temporairement retiré, donc l'indice diminue
+                        }
+
+                        listModel.add(dropIndex, data);
+                        listModel.remove(draggedIndex < dropIndex ? draggedIndex : draggedIndex + 1);
+
+                        return true;
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        return false;
+                    }
+                }
+            });
+
+            // frame.add(new JScrollPane(list), BorderLayout.CENTER);
+            // frame.setVisible(true);
+            JScrollPane scrollPane = new JScrollPane(list);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            scrollPane.setWheelScrollingEnabled(false);
+            scrollPane.setBounds(0,this.panelHeight/2,this.w-100,this.panelHeight/2);
+            scrollPane.setBackground(Color.BLUE);
+            gamePanel.add(scrollPane);
+
+            // submit
+            JButton submitButton = new JButton("Submit");
+
+            submitButton.addActionListener(e -> {
+                System.out.println("Btn clicked");
+                if (inputState != InputState.COMMAND) {
+                    return;
+                }
+                List<String> commands_list = new ArrayList<>();
+                for (int i = 0; i < listModel.size(); i++) {
+                    commands_list.add(listModel.getElementAt(i));
+                }
+                Command[] commands = new Command[3];
+                for (int i=0;i<3;i++){
+                    if (commands_list.get(i).equals("Expand")){
+                        commands[i] = Command.EXPAND;
+                    } else if (commands_list.get(i).equals("Explore")) {
+                        commands[i] = Command.EXPLORE;
+                    } else if (commands_list.get(i).equals("Exterminate")) {
+                        commands[i] = Command.EXTERMINATE;
+                    }
+                }
+
+                this.tempInputValue = commands;
+                synchronized (GUI.this) {
+                    notifyAll();
+                }
+            });
+            submitButton.setBounds(this.w-100,this.panelHeight/2,100, this.panelHeight/2);
+            gamePanel.add(submitButton);
+
+
+            // info
+            String txt = this.textInfo[1];
+            JLabel label = new JLabel(txt, SwingConstants.CENTER);
+            label.setFont(new Font("Arial", Font.PLAIN, 12));
+            if (this.textInfo[0].equals("error")) {
+                label.setForeground(Color.RED);
+            } else {
+                label.setForeground(Color.BLACK);
+            }
+            label.setOpaque(true);
+            label.setBackground(Color.WHITE);
+            label.setBounds(0,0,this.w, this.panelHeight/2);
+            gamePanel.add(label);
         }
     }
 
-    private void displayShips(JPanel gamePanel) {
+    private synchronized void displayShips(JPanel gamePanel) {
         for (int id : coords.keySet()){
             int nb = this.game.getArea().getCell(id).getShips().length;
             if (nb == 0) {
@@ -208,7 +328,7 @@ public class GUI implements GUIIOHandler {
         }
     }
 
-    public void displayForm() {
+    public synchronized void displayForm() {
         this.frame.setSize(300,150);
 
         JPanel panel = new JPanel();
@@ -249,10 +369,12 @@ public class GUI implements GUIIOHandler {
         String json = DataManipulator.loadSave("model");
         Game game = GameDataConverter.fromJson(json, "stonks");
         gui.setGameInstance(game);
-        gui.displayWinner(new int[]{0,1});
+        gui.setPlayerId(0);
+        game.getPlayer(0).getAvailableShips(1)[0].setCell(game.getArea().getCell(46));
+        System.out.println(gui.score(0));
     }
 
-    public String getIp() {
+    public synchronized String getIp() {
         this.state = State.FORM;
         this.displayForm();
 
@@ -289,7 +411,7 @@ public class GUI implements GUIIOHandler {
     }
 
     @Override
-    public void displayError(String message, int playerId) {
+    public synchronized void displayError(String message, int playerId) {
         if (playerId != this.playerId) {
             return;
         }
@@ -298,7 +420,7 @@ public class GUI implements GUIIOHandler {
     }
 
     @Override
-    public int getStartingCellId(int playerId) {
+    public synchronized int getStartingCellId(int playerId) {
         this.inputState = InputState.CELL;
         this.printTextInfo("Chose a cell to place your ship");
         System.out.println("Chose a starting cell");
@@ -332,37 +454,74 @@ public class GUI implements GUIIOHandler {
     }
 
     @Override
-    public HashMap<Integer, Command[]> getCommandOrders() {
-        // TODO
-        return null;
+    public synchronized Command[] getCommandOrders(int playerId) {
+        this.inputState = InputState.COMMAND;
+        this.printTextInfo("Chose commands order");
+        System.out.println("Chose commands order");
+        this.displayGame();
+
+        synchronized (this) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        Command[] commands = (Command[]) this.tempInputValue;
+        this.inputState = InputState.IDLE;
+        this.resetTextInfo();
+        this.displayGame();
+        System.out.println(Arrays.toString(commands));
+        return commands;
     }
 
     @Override
-    public int[][] expand(int playerId, int nShips) {
+    public synchronized int[][] expand(int playerId, int nShips) {
         // TODO
         return new int[0][];
     }
 
     @Override
-    public int[][][] explore(int playerId, int nFleet) {
+    public synchronized int[][][] explore(int playerId, int nFleet) {
         // TODO
         return new int[0][][];
     }
 
     @Override
-    public int[][] exterminate(int playerId, int nFleet) {
+    public synchronized int[][] exterminate(int playerId, int nFleet) {
         // TODO
         return new int[0][];
     }
 
     @Override
-    public int score(int id) {
-        // TODO
-        return 0;
+    public synchronized int score(int id) {
+        this.inputState = InputState.CELL;
+        System.out.println("Scoring a sector");
+        List<Sector> scorableSectors = this.game.getScorablesSectors();
+        List<Integer> scorableSectorIds = scorableSectors.stream().map(Sector::getId).collect(Collectors.toList());
+        this.printTextInfo("Chose a sector to score: "+scorableSectorIds.toString());
+        this.displayGame();
+
+        try {
+            this.wait();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        int cellId = (int) this.tempInputValue;
+
+        int sectorId = this.game.getArea().getCell(cellId).getSector().getId();
+
+        this.inputState = InputState.IDLE;
+        this.resetTextInfo();
+        this.displayGame();
+        System.out.println(">>> Scored sector : " + sectorId);
+        return sectorId;
     }
 
     @Override
-    public void displayWinner(int[] winnersIds) {
+    public synchronized void displayWinner(int[] winnersIds) {
         this.state = State.END;
         StringBuilder txt = new StringBuilder("The winners are: ");
         for(int i=0; i<winnersIds.length; i++) {
@@ -378,13 +537,14 @@ public class GUI implements GUIIOHandler {
     }
 
     @Override
-    public void displayDraw() {
+    public synchronized void displayDraw() {
         this.state = State.END;
         this.textInfo = new String[] {"info", "It's Draw !!!!"};
         this.displayGame();
     }
 
-    public void setPlayerId(int playerId) {
+    public synchronized void setPlayerId(int playerId) {
         this.playerId = playerId;
+        this.state = State.GAME;
     }
 }

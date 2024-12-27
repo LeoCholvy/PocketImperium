@@ -114,35 +114,36 @@ public class Client extends UnicastRemoteObject implements ClientRemote, Runnabl
 
     public Command[] getCommandOrder(int playerId) throws RemoteException {
         this.checkId(playerId);
-        Player player = this.game.getPlayer(playerId);
-        System.out.println("Player " + player.getName() + ", enter your command");
-        System.out.println("1. Expand");
-        System.out.println("2. Explore");
-        System.out.println("3. Exterminate");
-        System.out.println("input example : 213 for Explore, Expand, Exterminate");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        try {
-            System.out.print(">>>");
-            String input = reader.readLine();
-            Command[] commands = new Command[3];
-            if (input.length() != 3 || !input.contains("1") || !input.contains("2") || !input.contains("3")) {
-                displayError("Invalid input, please enter a valid command", playerId);
-                return this.getCommandOrder(playerId);
-            }
-            for (int i = 0; i < 3; i++) {
-                if (input.charAt(i) == '1') {
-                    commands[i] = Command.EXPAND;
-                } else if (input.charAt(i) == '2') {
-                    commands[i] = Command.EXPLORE;
-                } else if (input.charAt(i) == '3') {
-                    commands[i] = Command.EXTERMINATE;
-                }
-            }
-            return commands;
-        } catch (Exception e) {
-            displayError("Invalid input, please enter a valid command", playerId);
-            return this.getCommandOrder(playerId);
-        }
+        // Player player = this.game.getPlayer(playerId);
+        // System.out.println("Player " + player.getName() + ", enter your command");
+        // System.out.println("1. Expand");
+        // System.out.println("2. Explore");
+        // System.out.println("3. Exterminate");
+        // System.out.println("input example : 213 for Explore, Expand, Exterminate");
+        // BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        // try {
+        //     System.out.print(">>>");
+        //     String input = reader.readLine();
+        //     Command[] commands = new Command[3];
+        //     if (input.length() != 3 || !input.contains("1") || !input.contains("2") || !input.contains("3")) {
+        //         displayError("Invalid input, please enter a valid command", playerId);
+        //         return this.getCommandOrder(playerId);
+        //     }
+        //     for (int i = 0; i < 3; i++) {
+        //         if (input.charAt(i) == '1') {
+        //             commands[i] = Command.EXPAND;
+        //         } else if (input.charAt(i) == '2') {
+        //             commands[i] = Command.EXPLORE;
+        //         } else if (input.charAt(i) == '3') {
+        //             commands[i] = Command.EXTERMINATE;
+        //         }
+        //     }
+        //     return commands;
+        // } catch (Exception e) {
+        //     displayError("Invalid input, please enter a valid command", playerId);
+        //     return this.getCommandOrder(playerId);
+        // }
+        return this.io.getCommandOrders(playerId);
     }
 
     public int[][] expand(int playerId, int nShips) throws RemoteException {
