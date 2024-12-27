@@ -30,7 +30,6 @@ public class GameDataConverter {
      * @return the Game object created from the JSON string
      */
     public static Game fromJson(String json, String name) {
-        // FIXME : also add IOHandler to the game
         Game game = gson.fromJson(json, Game.class);
         Game.setInstance(game); // VERY IMPORTANT
         // the following methods need to get the instance of the game from Game.getInstance()

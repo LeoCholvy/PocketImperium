@@ -6,6 +6,7 @@ import fr.utt.lo02.RmiServer.Server;
 import fr.utt.lo02.core.Game;
 import fr.utt.lo02.core.Player;
 import fr.utt.lo02.data.DataManipulator;
+import fr.utt.lo02.data.GameDataConverter;
 
 import java.rmi.RemoteException;
 
@@ -50,10 +51,10 @@ public class Main {
         //     }
         //     return;
         // }
-        if (args.length == 1) {
-            Game game = Game.getInstance(new Player[]{new Player("Dodo", 0), new Player("Leo", 1)}, "stonks");
-            // Game game = Game.getInstance(DataManipulator.loadSave("test"), "stonks");
-            game.initIO(new CLI(game));
+        if (args.length == 1 && args[0].equals("debug")) {
+            // Game game = Game.getInstance(new Player[]{new Player("Dodo", 0), new Player("Leo", 1)}, "stonks");
+            Game game = Game.getInstance(DataManipulator.loadSave("model"), "stonks");
+            // game.initIO(new Server());
             // game.playGame();
             // java.lang.System.out.println(GameDataConverter.toJson(game));
             // java.lang.System.out.println(game.getInput().score(0));
@@ -77,6 +78,14 @@ public class Main {
         }
 
         // NORMAL MODE
-        // 1. Load or Create a game ?
+        if (args.length == 1 && args[0].equals("server")) {
+            //TODO : allow user to create a game
+
+            // load game and start server
+        }
+        if (args.length == 1 && args[0].equals("client")) {
+            // ask ip
+            // connect to server
+        }
     }
 }

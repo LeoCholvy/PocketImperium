@@ -57,6 +57,9 @@ public class CLI implements IOHandler {
             return getStartingCellId(playerid);
         }
     }
+    public void displayError(String message, int playerId) {
+        System.out.println("\u001B[31mError: " + message + "\u001B[0m");
+    }
     public void displayError(String message) {
         System.out.println("\u001B[31mError: " + message + "\u001B[0m");
     }
@@ -150,7 +153,6 @@ public class CLI implements IOHandler {
     }
 
     public int[][][] explore(int playerId, int nFleet) {
-        // FIXME : let the player choose to do nothing with -1
         List<List<int[]>> input = new ArrayList<>();
         Player player = this.game.getPlayer(playerId);
         displayGameState();
@@ -304,7 +306,6 @@ public class CLI implements IOHandler {
     }
 
     public int[][] exterminate(int playerId, int nSystem) {
-        // TODO : INPUT : exterminate
         List<List<Integer>> input = new ArrayList<>();
         Game game = this.game;
         Player player = game.getPlayer(playerId);

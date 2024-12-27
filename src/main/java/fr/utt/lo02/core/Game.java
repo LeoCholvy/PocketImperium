@@ -222,12 +222,12 @@ public class Game {
     public Cell placeTwoShips(Player player) {
         int input = this.input.getStartingCellId(player.getId());
         if (!(input >= 0 && input < this.area.getGrid().length)) {
-            this.input.displayError("The cell id must be between 0 and " + (this.area.getGrid().length - 1));
+            this.input.displayError("The cell id must be between 0 and " + (this.area.getGrid().length - 1), player.getId());
             return placeTwoShips(player);
         }
         Cell cell = this.area.getCell(input);
         if (!(cell.getSystem() != null && cell.getSystem().getLevel() == 1 && !cell.getSector().isUsed())) {
-            this.input.displayError("The Cell must be in an empty sector and have a level 1 system");
+            this.input.displayError("The Cell must be in an empty sector and have a level 1 system", player.getId());
             return placeTwoShips(player);
         }
         return cell;
@@ -298,7 +298,7 @@ public class Game {
         // 1. check if we have every player's id
         for (Player player : this.players) {
             if (!orders.containsKey(player.getId())) {
-                this.input.displayError("Player " + player.getName() + " didn't give orders");
+                this.input.displayError("Player " + player.getName() + " didn't give orders", player.getId());
                 return this.phase1();
             }
         }
@@ -306,11 +306,11 @@ public class Game {
         for (Player player : this.players) {
             Command[] commands = orders.get(player.getId());
             if (commands.length != 3) {
-                this.input.displayError("Player " + player.getName() + " must give 3 commands");
+                this.input.displayError("Player " + player.getName() + " must give 3 commands", player.getId());
                 return this.phase1();
             }
             if (Stream.of(commands).distinct().count() != 3) {
-                this.input.displayError("Player " + player.getName() + " must give 3 different commands");
+                this.input.displayError("Player " + player.getName() + " must give 3 different commands", player.getId());
                 return this.phase1();
             }
         }
@@ -363,13 +363,13 @@ public class Game {
 
         // 3. Exterminate
         l = (int) Stream.of(commands.values().toArray()).filter(command -> command == Command.EXTERMINATE).count();
-        // FIXME : generate the order of the players and check alive
         // for (int i = 0; i < n; i++) {
         //     Player player = this.cyclePlayers(i);
         //     if (commands.get(player) == Command.EXTERMINATE) {
         //         player.exterminate(4-l);
         //     }
         // }
+        // we use Player as an iterator (kind of)
         p = this.getStartingPlayer();
         while (p != null) {
             if (commands.get(p) == Command.EXTERMINATE) {
@@ -382,8 +382,7 @@ public class Game {
             p = p.next();
         }
 
-        // TODO : check if the game should end (or if a player died)
-        // NOTE We should get the order from the config file
+        // TODO : We should get the order from the config file
 
         return false;
     }
@@ -475,7 +474,7 @@ public class Game {
         this.phase3();
         this.cycleStartingPlayer();
 
-        // TODO : save the game state
+        // save the game state
         DataManipulator.saveGame(this.getName(), GameDataConverter.toJson(this));
         return false;
     }

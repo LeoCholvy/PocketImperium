@@ -1,7 +1,7 @@
 package fr.utt.lo02.RmiServer;
 
 import fr.utt.lo02.IO.CLI;
-import fr.utt.lo02.IO.IOHandler;
+import fr.utt.lo02.app.GUIManager;
 import fr.utt.lo02.core.Game;
 import fr.utt.lo02.core.IllegalGameStateExeceptions;
 import fr.utt.lo02.core.Player;
@@ -13,37 +13,51 @@ import java.io.InputStreamReader;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
 
 public class Client extends UnicastRemoteObject implements ClientRemote, Runnable {
     private ServerRemote serverRemote;
     private Integer playerId = null;
     private Game game;
-    private IOHandler io;
+    private GUIIOHandler io;
+    private GUIManager guiManager;
     private Thread checkServerConnectionThread;
 
     public Client() throws RemoteException {
         super();
+        this.guiManager = new GUIManager();
+        this.io = this.guiManager.getGUI();
         this.connectToServer();
     }
 
     private void connectToServer() {
         try {
-            // TODO ask the user for the server ip
             // String ip = "192.168.1.82";
-            String ip = "localhost";
+            // String ip = "localhost";
+            String ip;
+            while(true) {
+                try {
+                    ip = this.guiManager.getGUI().getIp();
+                    break;
+                } catch (Exception e) {
+                    System.out.println("Host not found");
+                }
+            }
+
             this.serverRemote = (ServerRemote) Naming.lookup("rmi://"+ip+":1099/PocketImperium");
             System.out.println("Connected to the server");
             if (this.serverRemote.registerClient(this)) {
                 System.out.println("Can't register to the server");
                 System.exit(1);
             }
+            this.guiManager.getGUI().displayGame();
             this.checkServerConnectionThread = new Thread(this);
             this.checkServerConnectionThread.start();
         } catch (Exception e) {
             // e.printStackTrace();
             System.out.println("Error while connecting to the server");
+            e.printStackTrace();
             System.exit(1);
+            // connectToServer();
         }
     }
     public void run() {
@@ -64,23 +78,15 @@ public class Client extends UnicastRemoteObject implements ClientRemote, Runnabl
     // }
 
     public String getUserName() throws RemoteException {
-        // TODO ask the user for his name
-        // return "Dodo";
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        try {
-            System.out.print("Enter your name : ");
-            return reader.readLine();
-        } catch (Exception e) {
-            System.out.println("Error while reading the name");
-            System.exit(1);
-            return null;
-        }
+        String username = this.io.getUserName();
+        return username;
     }
 
     public void setGameInstance(String json) throws RemoteException {
         this.game = Game.getInstance(json);
-        // FIXME : change it for GUI
-        this.io = new CLI(this.game);
+        // update gui
+        // this.io = new CLI(this.game);
+        this.guiManager.getGUI().setGameInstance(this.game);
 
         System.out.println("Game instance set");
         System.out.println(GameDataConverter.toJson(game));
@@ -88,11 +94,12 @@ public class Client extends UnicastRemoteObject implements ClientRemote, Runnabl
 
     public void setPlayerId(int playerId) throws RemoteException {
         this.playerId = playerId;
+        this.guiManager.getGUI().setPlayerId(playerId);
         System.out.println("Player id set : " + playerId);
     }
 
-    public void displayError(String message) throws RemoteException {
-        this.io.displayError(message);
+    public void displayError(String message, int playerId) throws RemoteException {
+        this.io.displayError(message, playerId);
     }
 
     public int getStartingCellId(int playerId) throws RemoteException {
@@ -114,7 +121,7 @@ public class Client extends UnicastRemoteObject implements ClientRemote, Runnabl
             String input = reader.readLine();
             Command[] commands = new Command[3];
             if (input.length() != 3 || !input.contains("1") || !input.contains("2") || !input.contains("3")) {
-                displayError("Invalid input, please enter a valid command");
+                displayError("Invalid input, please enter a valid command", playerId);
                 return this.getCommandOrder(playerId);
             }
             for (int i = 0; i < 3; i++) {
@@ -128,7 +135,7 @@ public class Client extends UnicastRemoteObject implements ClientRemote, Runnabl
             }
             return commands;
         } catch (Exception e) {
-            displayError("Invalid input, please enter a valid command");
+            displayError("Invalid input, please enter a valid command", playerId);
             return this.getCommandOrder(playerId);
         }
     }

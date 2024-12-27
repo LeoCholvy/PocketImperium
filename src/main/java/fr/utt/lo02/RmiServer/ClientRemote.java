@@ -13,7 +13,7 @@ public interface ClientRemote extends Remote {
     // public void setCurrentAction(String action) throws RemoteException;
     // public void receiveMessage(int playerId, String message) throws RemoteException;
 
-    public void displayError(String message) throws RemoteException; //FIXME : add the playerId
+    public void displayError(String message, int playerId) throws RemoteException;
     public int getStartingCellId(int playerId) throws RemoteException;
     public Command[] getCommandOrder(int playerId) throws RemoteException;
     public int[][] expand(int playerId, int nShips) throws RemoteException;

@@ -145,13 +145,13 @@ public class Player {
      */
     public void score (int multiplier) {
         int SectorId = Game.getInstance().getInput().score(this.getId());
-        // TODO : check if the input is valid
+        // check if the input is valid
         Sector sector = Game.getInstance().getArea().getSector(SectorId);
         if (!sector.isScorable()) {
-            Game.getInstance().getInput().displayError("You can't score this sector, it need to have occupied systems and not to be TriPrime");
+            Game.getInstance().getInput().displayError("You can't score this sector, it need to have occupied systems and not to be TriPrime", this.getId());
             this.score();
         }
-        // TODO : score the player
+        // score the player
         for (Cell cell : sector.getCells()) {
             System system = cell.getSystem();
             if (system != null && cell.getOwner() == this) {
@@ -171,14 +171,14 @@ public class Player {
     public void expand(int nShips) {
         int[][] input = Game.getInstance().getInput().expand(this.getId(), nShips);
         // should be array of [cellId, nShips]
-        // TODO : check if the input is valid
+        // check if the input is valid
         // can't add too much ships
         if (input == null) {
-            Game.getInstance().getInput().displayError("Invalid input");
+            Game.getInstance().getInput().displayError("Invalid input", this.getId());
             expand(nShips);
         }
         if (Arrays.stream(input).mapToInt(x -> x[1]).sum() > nShips) {
-            Game.getInstance().getInput().displayError("You can't add more ships than you have");
+            Game.getInstance().getInput().displayError("You can't add more ships than you have", this.getId());
             expand(nShips);
         }
         // need to add ships on player's system
@@ -186,26 +186,26 @@ public class Player {
             Game game = Game.getInstance();
             Cell cell = Game.getInstance().getArea().getCell(i[0]);
             if (cell.getSystem() == null) {
-                Game.getInstance().getInput().displayError("You can't add ships on a cell without a system");
+                Game.getInstance().getInput().displayError("You can't add ships on a cell without a system", this.getId());
                 expand(nShips);
                 return;
             }
             if (cell.getOwner() != this) {
-                Game.getInstance().getInput().displayError("You can't add ships on a cell that doesn't belong to you");
+                Game.getInstance().getInput().displayError("You can't add ships on a cell that doesn't belong to you",this.getId());
                 expand(nShips);
                 return;
             }
             Ship[] availableShips = this.getAvailableShips(i[1]);
             if (availableShips == null) {
-                Game.getInstance().getInput().displayError("You don't have enough ships");
+                Game.getInstance().getInput().displayError("You don't have enough ships", this.getId());
                 expand(nShips);
                 return;
             }
+            // add ships
             for (int j = 0; j < i[1]; j++) {
                 availableShips[j].setCell(cell);
             }
         }
-        // TODO : expand
     }
 
     /**
@@ -217,34 +217,35 @@ public class Player {
         // int[][][] input = [[[30, 2, 22], [22,2, 21]];
         // int[][][] input = new int[][][]{new int[][]{new int[]{11, 2, 16}}};
         // int[][][] input = new int[][][]{new int[][]{new int[]{16, 2, 10}}};
-        // TODO : check if the input is valid
         // int[][][] input = [[[startCellId, nShips, endCellId], [startCellId, nShips, endCellId]], [[startCellId, nShips, endCellId]], ...];
+        //
+        // check if the input is valid
         Area area = Game.getInstance().getArea();
         if (input == null) {
-            Game.getInstance().getInput().displayError("Invalid input");
+            Game.getInstance().getInput().displayError("Invalid input", this.getId());
             explore(nFleet);
             return;
         }
         // Il faut un tebleau de cette forme : [nFleet][1,2][3]
         if (input.length > nFleet) {
-            Game.getInstance().getInput().displayError("You can't explore with more than +" + nFleet + " fleets");
+            Game.getInstance().getInput().displayError("You can't explore with more than +" + nFleet + " fleets", this.getId());
             explore(nFleet);
             return;
         }
         for (int[][] fleetMove : input) {
             if (fleetMove.length > 2) {
-                Game.getInstance().getInput().displayError("You can't explore with more than 2 ships per fleet");
+                Game.getInstance().getInput().displayError("You can't explore with more than 2 ships per fleet", this.getId());
                 explore(nFleet);
                 return;
             }
             if (fleetMove.length == 2) {
                 if (!(fleetMove[0][2] == fleetMove[1][0])) {
-                    Game.getInstance().getInput().displayError("Invalid input, the end cell of the first move must be the start cell of the second move");
+                    Game.getInstance().getInput().displayError("Invalid input, the end cell of the first move must be the start cell of the second move", this.getId());
                     explore(nFleet);
                     return;
                 }
                 if (area.getCell(fleetMove[0][2]) == area.getTriPrimeCell()) {
-                    Game.getInstance().getInput().displayError("You can't pass through the TriPrime cell");
+                    Game.getInstance().getInput().displayError("You can't pass through the TriPrime cell",this.getId());
                     explore(nFleet);
                     return;
                 }
@@ -254,17 +255,17 @@ public class Player {
                     area.getCell(move[0]);
                     area.getCell(move[2]);
                 } catch (Exception e) {
-                    Game.getInstance().getInput().displayError("Invalid input, a cell doesn't exist");
+                    Game.getInstance().getInput().displayError("Invalid input, a cell doesn't exist",this.getId());
                     explore(nFleet);
                     return;
                 }
                 if (move.length != 3) {
-                    Game.getInstance().getInput().displayError("Invalid input");
+                    Game.getInstance().getInput().displayError("Invalid input", this.getId());
                     explore(nFleet);
                 }
                 Integer distance = area.getCell(move[0]).distance(area.getCell(move[2]), 2);
                 if (distance == null || distance != 1) {
-                    Game.getInstance().getInput().displayError("Invalid input, the cells must be adjacent");
+                    Game.getInstance().getInput().displayError("Invalid input, the cells must be adjacent", this.getId());
                     explore(nFleet);
                     return;
                 }
@@ -277,26 +278,26 @@ public class Player {
         for (int[][] fleetMove : input) {
             // System.out.println(Arrays.asList(area.getCell(fleetMove[0][0]).getShips()));
             if (!(area.getCell(fleetMove[0][0]).getOwner() == this && area.getCell(fleetMove[0][2]).isAvailable(this))) {
-                Game.getInstance().getInput().displayError("You need to start from a cell you own and end on an empty or owned cell");
+                Game.getInstance().getInput().displayError("You need to start from a cell you own and end on an empty or owned cell", this.getId());
                 explore(nFleet);
                 return;
             }
             Ship[] availableShips = area.getCell(fleetMove[0][0]).getAvailableShips(fleetMove[0][1]);
             if (availableShips == null) {
-                Game.getInstance().getInput().displayError("You don't have enough ships on this cell");
+                Game.getInstance().getInput().displayError("You don't have enough ships on this cell", this.getId());
                 explore(nFleet);
                 return;
             }
             List<Ship> fleet = new ArrayList<>(Arrays.asList(availableShips).subList(0, fleetMove[0][1]));
             if (fleetMove.length == 2) {
                 if (!(area.getCell(fleetMove[1][2]).isAvailable(this))) {
-                    Game.getInstance().getInput().displayError("You need to end on an empty or owned cell");
+                    Game.getInstance().getInput().displayError("You need to end on an empty or owned cell", this.getId());
                     explore(nFleet);
                     return;
                 }
                 availableShips = area.getCell(fleetMove[1][0]).getAvailableShips(fleetMove[1][1]);
                 if (availableShips == null) {
-                    Game.getInstance().getInput().displayError("You don't have enough ships on this cell");
+                    Game.getInstance().getInput().displayError("You don't have enough ships on this cell", this.getId());
                     explore(nFleet);
                     return;
                 }
@@ -312,7 +313,8 @@ public class Player {
                 fleets.put(area.getCell(fleetMove[0][2]), fleet.toArray(new Ship[0]));
             }
         }
-        // TODO : explore
+
+        // move the ships
         for (Cell cell : fleets.keySet()) {
             for (Ship ship : fleets.get(cell)) {
                 ship.setCell(cell);
@@ -330,20 +332,20 @@ public class Player {
         Game game = Game.getInstance();
         Area area = game.getArea();
         int[][] input = game.getInput().exterminate(this.getId(), nSystem);
-        // TODO : check if the input is valid
+        // check if the input is valid
         if (input == null) {
-            game.getInput().displayError("Invalid input");
+            game.getInput().displayError("Invalid input",this.getId());
             exterminate(nSystem);
             return;
         }
         if (input.length > nSystem) {
-            game.getInput().displayError("You can't extermine more than " + nSystem + " systems");
+            game.getInput().displayError("You can't extermine more than " + nSystem + " systems", this.getId());
             exterminate(nSystem);
             return;
         }
         for (int[] i : input) {
             if (i.length % 2 != 1) {
-                game.getInput().displayError("Invalid input");
+                game.getInput().displayError("Invalid input", this.getId());
                 exterminate(nSystem);
                 return;
             }
@@ -353,12 +355,12 @@ public class Player {
                     area.getCell(i[j]);
                 }
             } catch (Exception e) {
-                game.getInput().displayError("Invalid input, a cell doesn't exist");
+                game.getInput().displayError("Invalid input, a cell doesn't exist", this.getId());
                 exterminate(nSystem);
                 return;
             }
         }
-        // TODO : exterminate
+
         this.resetFleet();
         Game.getInstance().getArea().resetSystems();
         Map<Cell, List<Ship>> newShipsPos = new HashMap<>();
@@ -369,7 +371,7 @@ public class Player {
 
 
             if (attackedCell.getOwner() == null || attackedCell.getOwner() == this) {
-                game.getInput().displayError("Invalid input, you need to attack an enemies cell");
+                game.getInput().displayError("Invalid input, you need to attack an enemies cell", this.getId());
                 exterminate(nSystem);
                 return;
             }
@@ -382,7 +384,7 @@ public class Player {
                 Ship[] ships = c.getAvailableShips(currentInvasion[i+1]);
                 // NOTE : we assume i+1 exist because we tested currentInvasion (size is even)
                 if (ships == null) {
-                    game.getInput().displayError("Invalid input, you don't have enough ships");
+                    game.getInput().displayError("Invalid input, you don't have enough ships",this.getId());
                     exterminate(nSystem);
                     return;
                 }
@@ -415,8 +417,6 @@ public class Player {
                 ship.setCell(cell);
             }
         }
-        // TODO : check if a player is dead
-            // if all are dead : end the game
     }
 
     /**

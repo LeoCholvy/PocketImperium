@@ -135,11 +135,11 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
     }
 
 
-    public void displayError(String message) {
+    public void displayError(String message, int playerId) {
         System.out.println("Error : " + message);
         try {
             for (ClientRemote client : this.clientsRemote.values()) {
-                client.displayError(message);
+                client.displayError(message, playerId);
             }
         } catch (Exception e) {
             throw new GameRemoteExeceptions("Error while displaying error message");
