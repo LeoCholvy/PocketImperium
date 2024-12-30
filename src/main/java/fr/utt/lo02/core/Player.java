@@ -146,10 +146,18 @@ public class Player {
     public void score (int multiplier) {
         int SectorId = Game.getInstance().getInput().score(this.getId());
         // check if the input is valid
-        Sector sector = Game.getInstance().getArea().getSector(SectorId);
+        Sector sector = null;
+        try {
+            sector = Game.getInstance().getArea().getSector(SectorId);
+        } catch (InvalidGameInputExeceptions e) {
+            Game.getInstance().getInput().displayError("You must chose a valid sector", this.getId());
+            this.score(multiplier);
+            return;
+        }
         if (!sector.isScorable()) {
             Game.getInstance().getInput().displayError("You can't score this sector, it need to have occupied systems and not to be TriPrime", this.getId());
             this.score();
+            return;
         }
         // score the player
         for (Cell cell : sector.getCells()) {
@@ -372,6 +380,11 @@ public class Player {
 
             if (attackedCell.getOwner() == null || attackedCell.getOwner() == this) {
                 game.getInput().displayError("Invalid input, you need to attack an enemies cell", this.getId());
+                exterminate(nSystem);
+                return;
+            }
+            if (attackedCell.getSystem() == null) {
+                game.getInput().displayError("Invalid input, you need to attack a cell with a system", this.getId());
                 exterminate(nSystem);
                 return;
             }

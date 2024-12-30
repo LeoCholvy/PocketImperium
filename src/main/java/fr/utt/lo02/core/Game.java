@@ -10,6 +10,7 @@ import java.lang.System;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -34,14 +35,13 @@ public class Game {
      * @param players the array of players in the game
      * @throws IllegalStateException if an instance of the game already exists
      */
-    private Game(Player[] players) {
+    private Game(Player[] players, boolean isDefaultmap) {
         if (instance != null) {
             throw new IllegalStateException("Game already created");
         }
-        // this.input = input;
-        this.players = players;
-        this.area = new Area();
         instance = this;
+        this.players = players;
+        this.area = new Area(isDefaultmap);
         this.initPlayerIterator();
     }
 
@@ -76,10 +76,23 @@ public class Game {
         if (instance != null) {
             throw new IllegalGameStateExeceptions("Game already created");
         }
-        Game game = new Game(players);
+        if (players.length <= 1 || players.length >= 4) {
+            throw new IllegalGameStateExeceptions("The number of players must be between 2 and 3");
+        }
+        Game game = new Game(players, false);
         game.setName(name);
         return game;
     }
+
+    public static Game getInstance(Player[] players, String name, boolean isDefaultmap) {
+        if (instance != null) {
+            throw new IllegalGameStateExeceptions("Game already created");
+        }
+        Game game = new Game(players, isDefaultmap);
+        game.setName(name);
+        return game;
+    }
+
     /**
      * Get the instance of the game.
      * @param json the JSON representation of the game
@@ -90,9 +103,7 @@ public class Game {
      * @see IOHandler
      */
     public static Game getInstance(String json, String name) {
-        Game game = GameDataConverter.fromJson(json, name);
-        // game.initIO(io);
-        return game;
+        return GameDataConverter.fromJson(json, name);
     }
 
     public static Game getInstance(String json) {
@@ -487,6 +498,8 @@ public class Game {
         this.resetSectors();
         Player p = this.getStartingPlayer();
         while (!(p == null || this.getScorablesSectors().isEmpty())) {
+            // TODO : remove this line:
+            System.out.println("Scorable sectors: " + this.getScorablesSectors().stream().map(Sector::getId).collect(Collectors.toList()) + this.getScorablesSectors().size());
             p.score();
             p = p.next(); // NOTE : p.next() will return null if we looped through all the players
         }
@@ -516,7 +529,7 @@ public class Game {
     }
 
     private void endGame() {
-        if (this.getAlivePlayers().length == 1) {
+        if (this.getAlivePlayers().length == 1 && !this.getScorablesSectors().isEmpty()) {
             this.getAlivePlayers()[0].score(2);
             this.getInput().displayWinner(new int[]{this.getAlivePlayers()[0].getId()});
         } else if (this.getAlivePlayers().length == 0) {
@@ -526,7 +539,7 @@ public class Game {
             this.cycleStartingPlayer();
             this.resetSectors();
             Player p = this.getStartingPlayer();
-            while (p != null) {
+            while (p != null && !this.getScorablesSectors().isEmpty()) {
                 p.score(2);
                 p = p.next();
             }
@@ -579,5 +592,9 @@ public class Game {
 
     public List<Player> getHumanPlayers() {
         return Stream.of(this.players).filter(Player::isHuman).toList();
+    }
+
+    public int getRound() {
+        return this.round;
     }
 }

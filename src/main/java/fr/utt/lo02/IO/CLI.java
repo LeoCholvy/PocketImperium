@@ -26,7 +26,10 @@ public class CLI implements IOHandler {
      * @see Game#initIO(IOHandler)
      */
     public CLI() {
-        this.game = null;
+        this.game = Game.getInstance();
+        if (this.game == null) {
+            throw new IllegalGameStateExeceptions("Game not found");
+        }
     }
     public CLI(Game game) {
         this.game = game;

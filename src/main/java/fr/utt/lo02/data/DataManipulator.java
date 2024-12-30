@@ -239,6 +239,7 @@ public class DataManipulator {
         // }
         try {
             Files.write(Paths.get("src/ressources/saves/" + name + ".json"), json.getBytes());
+            System.out.println("Game saved as " + name);
         } catch (IOException e) {
             return false;
         }

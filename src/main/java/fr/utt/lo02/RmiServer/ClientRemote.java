@@ -22,4 +22,5 @@ public interface ClientRemote extends Remote {
     public int score(int id) throws RemoteException;
     public void displayWinner(int[] winnersIds) throws RemoteException;
     public void displayDraw() throws RemoteException;
+    public void deconnect() throws RemoteException;
 }

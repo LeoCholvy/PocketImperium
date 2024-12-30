@@ -2,9 +2,9 @@ package fr.utt.lo02.app;
 
 import fr.utt.lo02.RmiServer.GUIIOHandler;
 import fr.utt.lo02.core.Game;
+import fr.utt.lo02.core.IllegalGameStateExeceptions;
 import fr.utt.lo02.core.Player;
-import fr.utt.lo02.core.components.Command;
-import fr.utt.lo02.core.components.Sector;
+import fr.utt.lo02.core.components.*;
 import fr.utt.lo02.data.DataManipulator;
 import fr.utt.lo02.data.GameDataConverter;
 
@@ -19,6 +19,7 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.System;
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.List;
@@ -100,6 +101,9 @@ public class GUI implements GUIIOHandler {
     private Object tempInputValue;
     private Game game;
     private String[] textInfo = new String[]{"info", "Waiting for your turn"};
+    private int tempMaxNumber;
+    private Object lock = new Object();
+    private boolean skipable = false;
 
     public GUI() {
         // init the frame
@@ -107,7 +111,7 @@ public class GUI implements GUIIOHandler {
         this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
-    public synchronized void setGameInstance(Game game) {
+    public void setGameInstance(Game game) {
         this.game = game;
         this.displayGame();
     }
@@ -170,6 +174,29 @@ public class GUI implements GUIIOHandler {
 
     private synchronized void displayTopPanel(JPanel gamePanel) {
         if (this.inputState == InputState.IDLE || this.inputState == InputState.CELL) {
+            if (this.inputState == InputState.CELL && this.skipable) {
+                JButton skip = new JButton("Skip");
+                skip.setBounds(this.w-100, this.panelHeight-15, 100, 15);
+                gamePanel.add(skip);
+                skip.addActionListener(e -> {
+                    this.tempInputValue = -1;
+                    synchronized (GUI.this) {
+                        GUI.this.notifyAll();
+                    }
+                });
+            }
+            StringBuilder scoreTxt = new StringBuilder();
+            for (Player p : this.game.getPlayers()) {
+                scoreTxt.append(p.getName()).append(": ").append(p.getScore()).append(" | ");
+            }
+            scoreTxt.append("round: ").append(this.game.getRound());
+            JLabel score = new JLabel(scoreTxt.toString(), SwingConstants.LEFT);
+            score.setFont(new Font("Arial", Font.PLAIN, 10));
+            score.setForeground(Color.WHITE);
+            score.setOpaque(true);
+            score.setBackground(Color.BLACK);
+            score.setBounds(0, 0, this.w, 10);
+            gamePanel.add(score);
             String txt = this.textInfo[1];
             JLabel label = new JLabel(txt, SwingConstants.CENTER);
             label.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -180,13 +207,56 @@ public class GUI implements GUIIOHandler {
             }
             label.setOpaque(true);
             label.setBackground(Color.WHITE);
-            label.setBounds(10,10,this.w-20, this.panelHeight-20);
+            label.setBounds(10, 10, this.w - 20, this.panelHeight - 20);
             gamePanel.add(label);
             JLabel panelColor = new JLabel("", SwingConstants.CENTER);
             panelColor.setOpaque(true);
             panelColor.setBackground(this.playersColor[this.playerId]);
-            panelColor.setBounds(0,0, this.w, this.panelHeight);
+            panelColor.setBounds(0, 0, this.w, this.panelHeight);
             gamePanel.add(panelColor);
+        } else if (this.inputState == InputState.NUMBER) {
+            JButton[] numberButtons = new JButton[this.tempMaxNumber+1];
+            for (int i = 0; i <= this.tempMaxNumber; i++) {
+                if (this.skipable) {
+                    JButton skip = new JButton("Skip");
+                    skip.setBounds(this.w-100, this.panelHeight-15, 100, 15);
+                    gamePanel.add(skip);
+                    skip.addActionListener(e -> {
+                        this.tempInputValue = -1;
+                        synchronized (GUI.this) {
+                            GUI.this.notifyAll();
+                        }
+                    });
+                }
+
+
+                numberButtons[i] = new JButton(String.valueOf(i));
+                numberButtons[i].setFont(new Font("Arial", Font.PLAIN, 14));
+                int l = 20;
+                numberButtons[i].setBounds((int)(i*l*2.3), this.panelHeight-l, (int) (l*2.3), l);
+                gamePanel.add(numberButtons[i]);
+                int finalI = i;
+                numberButtons[i].addActionListener(e -> {
+                    this.tempInputValue = finalI;
+                    synchronized (GUI.this) {
+                        notifyAll();
+                    }
+                });
+            }
+
+            // info
+            String txt = this.textInfo[1];
+            JLabel label = new JLabel(txt, SwingConstants.CENTER);
+            label.setFont(new Font("Arial", Font.PLAIN, 12));
+            if (this.textInfo[0].equals("error")) {
+                label.setForeground(Color.RED);
+            } else {
+                label.setForeground(Color.BLACK);
+            }
+            label.setOpaque(true);
+            label.setBackground(Color.WHITE);
+            label.setBounds(0,0,this.w, this.panelHeight/2);
+            gamePanel.add(label);
         } else if (this.inputState == InputState.COMMAND) {
             DefaultListModel<String> listModel = new DefaultListModel<>();
             listModel.addElement("Expand");
@@ -310,20 +380,27 @@ public class GUI implements GUIIOHandler {
         }
     }
 
-    private synchronized void displayShips(JPanel gamePanel) {
+    private void displayShips(JPanel gamePanel) {
         for (int id : coords.keySet()){
             int nb = this.game.getArea().getCell(id).getShips().length;
             if (nb == 0) {
                 continue;
             }
 
-            JLabel centerLabel = new JLabel(String.valueOf(nb), SwingConstants.CENTER);
+            int nbA = this.game.getArea().getCell(id).getAvailableShipsCount();
+            String txt = String.valueOf(nbA)+"+"+String.valueOf(nb-nbA);
+            if (nbA == nb) {
+                txt = String.valueOf(nb);
+            }
+
+            JLabel centerLabel = new JLabel(txt, SwingConstants.CENTER);
             centerLabel.setOpaque(false);
             centerLabel.setFont(new Font("Arial", Font.PLAIN, 20));
             centerLabel.setForeground(this.playersColor[this.game.getArea().getCell(id).getOwner().getId()]);
             int x = coords.get(id)[0];
             int y = coords.get(id)[1] + this.panelHeight;
-            centerLabel.setBounds(x-7,y-10, 15, 20);
+            // centerLabel.setBounds(x-7,y-10, 15, 20);
+            centerLabel.setBounds(x-20,y-10, 40, 20);
             gamePanel.add(centerLabel);
         }
     }
@@ -369,9 +446,24 @@ public class GUI implements GUIIOHandler {
         String json = DataManipulator.loadSave("model");
         Game game = GameDataConverter.fromJson(json, "stonks");
         gui.setGameInstance(game);
-        gui.setPlayerId(0);
-        game.getPlayer(0).getAvailableShips(1)[0].setCell(game.getArea().getCell(46));
-        System.out.println(gui.score(0));
+        gui.setPlayerId(1);
+        game.getPlayer(1).getAvailableShips(1)[0].setCell(game.getArea().getCell(46));
+        game.getPlayer(1).getAvailableShips(1)[0].setCell(game.getArea().getCell(3));
+        game.getPlayer(1).getAvailableShips(1)[0].setCell(game.getArea().getCell(3));
+        game.getPlayer(1).getAvailableShips(1)[0].setCell(game.getArea().getCell(3));
+        game.getPlayer(1).getAvailableShips(1)[0].setCell(game.getArea().getCell(3));
+        game.getPlayer(1).getAvailableShips(1)[0].setCell(game.getArea().getCell(3));
+        game.getPlayer(1).getAvailableShips(1)[0].setCell(game.getArea().getCell(3));
+        game.getPlayer(1).getAvailableShips(1)[0].setCell(game.getArea().getCell(4));
+        game.getPlayer(1).getAvailableShips(1)[0].setCell(game.getArea().getCell(8));
+        game.getPlayer(1).getAvailableShips(1)[0].setCell(game.getArea().getCell(8));
+        game.getPlayer(0).getAvailableShips(1)[0].setCell(game.getArea().getCell(9));
+        game.getPlayer(0).getAvailableShips(1)[0].setCell(game.getArea().getCell(9));
+        game.getPlayer(0).getAvailableShips(1)[0].setCell(game.getArea().getCell(9));
+        game.getPlayer(0).getAvailableShips(1)[0].setCell(game.getArea().getCell(9));
+        game.getPlayer(0).getAvailableShips(1)[0].setCell(game.getArea().getCell(9));
+        int[][] r = gui.exterminate(1, 2);
+        System.out.println(Arrays.deepToString(r));
     }
 
     public synchronized String getIp() {
@@ -419,25 +511,53 @@ public class GUI implements GUIIOHandler {
         this.displayGame();
     }
 
-    @Override
-    public synchronized int getStartingCellId(int playerId) {
-        this.inputState = InputState.CELL;
-        this.printTextInfo("Chose a cell to place your ship");
-        System.out.println("Chose a starting cell");
-        this.displayGame();
-
-        // wait for player input
-        synchronized (this) {
+    private synchronized void waitInput(InputState inputState, String txt) {
+        if (this.inputState != InputState.IDLE) {
             try {
-                this.wait();
+                this.lock.wait();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }
+        this.inputState = inputState;
+        this.printTextInfo(txt);
+        this.displayGame();
+        try {
+            this.wait();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-        int cellId = (int) this.tempInputValue;
+    private synchronized void resetInputMode() {
         this.inputState = InputState.IDLE;
         this.resetTextInfo();
+        this.displayGame();
+        try {
+            this.lock.notify();
+        } catch (Exception _) {
+        }
+    }
+
+    @Override
+    public synchronized int getStartingCellId(int playerId) {
+        // this.inputState = InputState.CELL;
+        // this.printTextInfo("Chose a cell to place your ship");
+        // this.displayGame();
+        System.out.println("Chose a starting cell");
+
+        // wait for player input
+        // synchronized (this) {
+        //     try {
+        //         this.wait();
+        //     } catch (InterruptedException e) {
+        //         throw new RuntimeException(e);
+        //     }
+        // }
+        this.waitInput(InputState.CELL, "Chose a cell to place your ship");
+
+        int cellId = (int) this.tempInputValue;
+        this.resetInputMode();
         System.out.println(">>> Starting cell : "+cellId);
         return cellId;
     }
@@ -455,67 +575,307 @@ public class GUI implements GUIIOHandler {
 
     @Override
     public synchronized Command[] getCommandOrders(int playerId) {
-        this.inputState = InputState.COMMAND;
-        this.printTextInfo("Chose commands order");
+        // this.inputState = InputState.COMMAND;
+        // this.printTextInfo("Chose commands order");
+        // this.displayGame();
         System.out.println("Chose commands order");
-        this.displayGame();
 
-        synchronized (this) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        // synchronized (this) {
+        //     try {
+        //         wait();
+        //     } catch (InterruptedException e) {
+        //         throw new RuntimeException(e);
+        //     }
+        // }
+
+        this.waitInput(InputState.COMMAND, "Chose commands order");
 
         Command[] commands = (Command[]) this.tempInputValue;
-        this.inputState = InputState.IDLE;
-        this.resetTextInfo();
-        this.displayGame();
+        this.resetInputMode();
+        // this.displayGame();
         System.out.println(Arrays.toString(commands));
         return commands;
     }
 
     @Override
     public synchronized int[][] expand(int playerId, int nShips) {
-        // TODO
-        return new int[0][];
+        System.out.println("Expand");
+        ArrayList<int[]> ships = new ArrayList<>();
+        Player player = this.game.getPlayer(playerId);
+        int nShipsMax = Math.min(nShips, player.getNumberAvailableShips());
+        while (nShipsMax > 0) {
+            int nShipsOnCell;
+            int cellId;
+            this.skipable = true;
+            this.waitInput(InputState.CELL, "Chose a cell to expand");
+            this.skipable = false;
+            cellId = (int) this.tempInputValue;
+            this.resetInputMode();
+            if (cellId == -1) {
+                break;
+            }
+            if (this.game.getArea().getCell(cellId).getSystem() == null) {
+                this.displayError("You can't expand on a cell without a system", playerId);
+                continue;
+            }
+            if (this.game.getArea().getCell(cellId).getOwner() != player) {
+                this.displayError("You can't expand on a cell you don't own", playerId);
+                continue;
+            }
+            if (nShipsMax == 1) {
+                nShipsOnCell = 1;
+            } else {
+                this.tempMaxNumber = nShipsMax;
+                this.waitInput(InputState.NUMBER, "Chose the number of ships to place on this cell");
+                nShipsOnCell = (int) this.tempInputValue;
+                this.resetInputMode();
+                Ship[] temp = this.game.getPlayer(this.playerId).getAvailableShips(nShipsOnCell);
+                for (Ship s : temp) {
+                    s.setCell(this.game.getArea().getCell(cellId));
+                }
+            }
+            ships.add(new int[]{cellId, nShipsOnCell});
+            nShipsMax -= nShipsOnCell;
+        }
+
+        this.resetInputMode();
+        System.out.println(">>> Expanded ships : "+Arrays.deepToString(ships.toArray(new int[0][0])));
+        return ships.toArray(new int[0][0]);
     }
 
     @Override
     public synchronized int[][][] explore(int playerId, int nFleet) {
-        // TODO
-        return new int[0][][];
+        System.out.println("Explore");
+        List<List<int[]>> input = new ArrayList<>();
+        Player player = this.game.getPlayer(playerId);
+        Area area = this.game.getArea();
+        while (nFleet > 0) {
+            List<Ship> fleetShips = new ArrayList<>();
+            List<int[]> fleet = new ArrayList<>();
+            int startCellId, nShips, destCellId;
+            this.skipable = true;
+            this.waitInput(InputState.CELL, "Chose a cell to start the exploration");
+            this.skipable = false;
+            startCellId = (int) this.tempInputValue;
+            this.resetInputMode();
+            if (startCellId == -1) {
+                break;
+            }
+            if (area.getCell(startCellId).getOwner() != player) {
+                this.displayError("You can't explore from a cell you don't own", playerId);
+                continue;
+            }
+
+            this.tempMaxNumber = area.getCell(startCellId).getAvailableShipsCount();
+            if (this.tempMaxNumber == 0) {
+                this.displayError("You don't have any ships on this cell you can move", playerId);
+                continue;
+            }
+            this.waitInput(InputState.NUMBER, "Chose the number of ships to move");
+            nShips = (int) this.tempInputValue;
+            this.resetInputMode();
+
+            this.waitInput(InputState.CELL, "Chose a destination for the fleet");
+            destCellId = (int) this.tempInputValue;
+            this.resetInputMode();
+            if (area.getCell(destCellId).getOwner() != player && area.getCell(destCellId).getOwner() != null) {
+                this.displayError("This cell is already owned by another player", playerId);
+                continue;
+            }
+            if (area.getCell(startCellId).distance(area.getCell(destCellId), 2) != 1) {
+                this.displayError("The destination cell is not a neighbor of the starting cell", playerId);
+                continue;
+            }
+
+            // move the ships
+            fleetShips.addAll(Arrays.asList(area.getCell(startCellId).getAvailableShips(nShips)));
+            for (Ship s : fleetShips) {
+                s.setCell(area.getCell(destCellId));
+                s.setUsed(true);
+            }
+            this.displayGame();
+
+            fleet.add(new int[]{startCellId, nShips, destCellId});
+
+
+            //second move of the fleet
+            int nShips2, destCellId2;
+            this.tempMaxNumber = area.getCell(destCellId).getAvailableShipsCount();
+            this.skipable = true;
+            this.waitInput(InputState.NUMBER, "How many ships do you want to add to the fleet?");
+            this.skipable = false;
+
+            nShips2 = (int) this.tempInputValue;
+            this.resetInputMode();
+
+            if (nShips2 == -1) {
+                input.add(fleet);
+                nFleet--;
+                continue;
+            }
+
+            while (true) {
+                this.waitInput(InputState.CELL, "Chose a destination for the fleet");
+                destCellId2 = (int) this.tempInputValue;
+                this.resetInputMode();
+                if (area.getCell(destCellId2).getOwner() != player && area.getCell(destCellId2).getOwner() != null) {
+                    this.displayError("This cell is already owned by another player", playerId);
+                    continue;
+                }
+                if (area.getCell(destCellId).distance(area.getCell(destCellId2), 2) != 1) {
+                    this.displayError("The destination cell is not a neighbor of the starting cell", playerId);
+                    continue;
+                }
+                break;
+            }
+
+            // move the ships
+            fleetShips.addAll(Arrays.asList(area.getCell(destCellId).getAvailableShips(nShips2)));
+            for (Ship s : fleetShips) {
+                s.setCell(area.getCell(destCellId2));
+                s.setUsed(true);
+            }
+            this.displayGame();
+
+            fleet.add(new int[]{destCellId, nShips2, destCellId2});
+
+            input.add(fleet);
+            nFleet--;
+        }
+
+        this.resetInputMode();
+
+        int [][][] result = new int[input.size()][][];
+        for (int i = 0; i < input.size(); i++) {
+            result[i] = input.get(i).toArray(new int[0][0]);
+        }
+        System.out.println(">>> Explored ships : "+Arrays.deepToString(result));
+        return result;
     }
 
     @Override
-    public synchronized int[][] exterminate(int playerId, int nFleet) {
-        // TODO
-        return new int[0][];
+    public synchronized int[][] exterminate(int playerId, int nSystem) {
+        System.out.println("Exterminate");
+        List<List<Integer>> input = new ArrayList<>();
+        Player player = this.game.getPlayer(playerId);
+        Area area = this.game.getArea();
+
+        while (nSystem > 0) {
+            List<Integer> currentAttack = new ArrayList<>();
+            int cellId, id, nShips;
+
+            this.skipable = true;
+            this.waitInput(InputState.CELL, "Chose a cell to exterminate");
+            this.skipable = false;
+            cellId = (int) this.tempInputValue;
+            this.resetInputMode();
+            if (cellId == -1) {
+                break;
+            }
+            if (area.getCell(cellId).getOwner() == player || area.getCell(cellId).getOwner() == null) {
+                this.displayError("You need to exterminate an enemies cell", playerId);
+                continue;
+            }
+            if (area.getCell(cellId).getSystem() == null) {
+                this.displayError("You can't exterminate from a cell without a system", playerId);
+                continue;
+            }
+            Cell attackedCell = area.getCell(cellId);
+            List<Ship> attackingShips = new ArrayList<>();
+            List<Ship> attackedShips = new ArrayList<>(Arrays.asList(attackedCell.getShips()));
+
+            while(true) {
+                this.skipable = true;
+                this.waitInput(InputState.CELL, "Chose a cell to attack from");
+                this.skipable = false;
+                id = (int) this.tempInputValue;
+                this.resetInputMode();
+
+                if (id == -1) {;
+                    break;
+                }
+
+                if (area.getCell(id).getOwner() != player) {
+                    this.displayError("You can't attack from a cell you don't own", playerId);
+                    continue;
+                }
+                if (area.getCell(cellId).distance(area.getCell(id), 2) == null) {
+                    this.displayError("The destination cell is not a neighbor of the starting cell", playerId);
+                    continue;
+                }
+
+                this.tempMaxNumber = area.getCell(id).getAvailableShipsCount();
+                this.waitInput(InputState.NUMBER, "How many ships do you want to send?");
+                nShips = (int) this.tempInputValue;
+                this.resetInputMode();
+                if (nShips == 0) {
+                    continue;
+                }
+                if (currentAttack.size() == 0) {
+                    currentAttack.add(cellId);
+                }
+
+                attackingShips.addAll(Arrays.asList(area.getCell(id).getAvailableShips(nShips)));
+                currentAttack.add(id);
+                currentAttack.add(nShips);
+
+                //move the ships
+                while (attackingShips.size() > 0 && attackedShips.size() > 0) {
+                    attackingShips.getFirst().setCell(null);
+                    Ship attackingShip = attackingShips.removeFirst();
+                    attackedShips.getFirst().setCell(null);
+                    Ship attackedShip = attackedShips.removeFirst();
+                }
+                if (attackingShips.size() > 0) {
+                    for (Ship s : attackingShips) {
+                        s.setCell(attackedCell);
+                        s.setUsed(true);
+                    }
+                }
+                this.displayGame();
+            }
+            if (currentAttack.size() > 0) {
+                input.add(currentAttack);
+                nSystem--;
+            }
+
+            // nSystem--;
+        }
+
+
+        this.resetInputMode();
+        int[][] result = new int[input.size()][];
+        for (int i = 0; i < input.size(); i++) {
+            result[i] = input.get(i).stream().mapToInt(Integer::intValue).toArray();
+        }
+        System.out.println(">>> Exterminated ships : "+Arrays.deepToString(result));
+        return result;
     }
 
     @Override
     public synchronized int score(int id) {
-        this.inputState = InputState.CELL;
+        // this.inputState = InputState.CELL;
         System.out.println("Scoring a sector");
         List<Sector> scorableSectors = this.game.getScorablesSectors();
         List<Integer> scorableSectorIds = scorableSectors.stream().map(Sector::getId).collect(Collectors.toList());
-        this.printTextInfo("Chose a sector to score: "+scorableSectorIds.toString());
-        this.displayGame();
+        // this.printTextInfo("Chose a sector to score: "+scorableSectorIds.toString());
+        // this.displayGame();
 
-        try {
-            this.wait();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        // try {
+        //     this.wait();
+        // } catch (InterruptedException e) {
+        //     throw new RuntimeException(e);
+        // }
+        this.waitInput(InputState.CELL, "Chose a sector to score: "+scorableSectorIds.toString());
 
         int cellId = (int) this.tempInputValue;
+        Sector sector = this.game.getArea().getCell(cellId).getSector();
+        int sectorId = -1;
+        if (sector != null) {
+            sectorId = this.game.getArea().getCell(cellId).getSector().getId();
+        }
 
-        int sectorId = this.game.getArea().getCell(cellId).getSector().getId();
-
-        this.inputState = InputState.IDLE;
-        this.resetTextInfo();
-        this.displayGame();
+        this.resetInputMode();
         System.out.println(">>> Scored sector : " + sectorId);
         return sectorId;
     }

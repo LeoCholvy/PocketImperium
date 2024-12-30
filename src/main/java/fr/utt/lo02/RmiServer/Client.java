@@ -49,7 +49,7 @@ public class Client extends UnicastRemoteObject implements ClientRemote, Runnabl
                 System.out.println("Can't register to the server");
                 System.exit(1);
             }
-            this.guiManager.getGUI().displayGame();
+            // this.guiManager.getGUI().displayGame();
             this.checkServerConnectionThread = new Thread(this);
             this.checkServerConnectionThread.start();
         } catch (Exception e) {
@@ -83,6 +83,7 @@ public class Client extends UnicastRemoteObject implements ClientRemote, Runnabl
     }
 
     public void setGameInstance(String json) throws RemoteException {
+        System.out.println(json);
         this.game = Game.getInstance(json);
         // update gui
         // this.io = new CLI(this.game);
@@ -172,6 +173,11 @@ public class Client extends UnicastRemoteObject implements ClientRemote, Runnabl
 
     public void displayDraw() throws RemoteException {
         this.io.displayDraw();
+    }
+
+    @Override
+    public void deconnect() throws RemoteException {
+        System.exit(0);
     }
 
     private void checkId(int id) {

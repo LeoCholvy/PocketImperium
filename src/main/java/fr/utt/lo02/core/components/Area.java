@@ -1,7 +1,9 @@
 package fr.utt.lo02.core.components;
 
 import com.google.gson.annotations.Expose;
+import fr.utt.lo02.core.Game;
 import fr.utt.lo02.core.IllegalGameStateExeceptions;
+import fr.utt.lo02.core.InvalidGameInputExeceptions;
 import fr.utt.lo02.data.DataManipulator;
 
 import java.util.ArrayList;
@@ -14,7 +16,7 @@ public class Area {
     @Expose
     private Sector[] sectors;
     // private Sector[] sectors;
-    public Area() {
+    public Area(boolean isDefaultMap) {
         Properties neighbors = DataManipulator.getMapProperties();
         int n = neighbors.size();
         this.grid = new Cell[n];
@@ -28,31 +30,35 @@ public class Area {
         // set sectors
         this.setSectors();
         // generate system
-        this.generateSystems();
-        // this.getCell(1).setSystem(new System(2));
-        // this.getCell(3).setSystem(new System(1));
-        // this.getCell(5).setSystem(new System(1));
-        // this.getCell(6).setSystem(new System(1));
-        // this.getCell(7).setSystem(new System(1));
-        // this.getCell(9).setSystem(new System(1));
-        // this.getCell(13).setSystem(new System(1));
-        // this.getCell(14).setSystem(new System(2));
-        // this.getCell(17).setSystem(new System(2));
-        // this.getCell(18).setSystem(new System(2));
-        // this.getCell(25).setSystem(new System(1));
-        // this.getCell(20).setSystem(new System(1));
-        // this.getCell(0).setSystem(new System(3));
-        // this.getCell(27).setSystem(new System(2));
-        // this.getCell(22).setSystem(new System(1));
-        // this.getCell(29).setSystem(new System(1));
-        // this.getCell(30).setSystem(new System(1));
-        // this.getCell(31).setSystem(new System(1));
-        // this.getCell(33).setSystem(new System(1));
-        // this.getCell(36).setSystem(new System(2));
-        // this.getCell(38).setSystem(new System(2));
-        // this.getCell(40).setSystem(new System(2));
-        // this.getCell(44).setSystem(new System(1));
-        // this.getCell(46).setSystem(new System(1));
+        if (!isDefaultMap) {
+            this.generateSystems();
+        } else {
+            this.getCell(1).setSystem(new System(2));
+            this.getCell(3).setSystem(new System(1));
+            this.getCell(5).setSystem(new System(1));
+            this.getCell(6).setSystem(new System(1));
+            this.getCell(7).setSystem(new System(1));
+            this.getCell(9).setSystem(new System(1));
+            this.getCell(13).setSystem(new System(1));
+            this.getCell(14).setSystem(new System(2));
+            this.getCell(17).setSystem(new System(2));
+            this.getCell(18).setSystem(new System(2));
+            this.getCell(25).setSystem(new System(1));
+            this.getCell(20).setSystem(new System(1));
+            this.getCell(0).setSystem(new System(3));
+            this.getCell(27).setSystem(new System(2));
+            this.getCell(22).setSystem(new System(1));
+            this.getCell(29).setSystem(new System(1));
+            this.getCell(30).setSystem(new System(1));
+            this.getCell(31).setSystem(new System(1));
+            this.getCell(33).setSystem(new System(1));
+            this.getCell(36).setSystem(new System(2));
+            this.getCell(38).setSystem(new System(2));
+            this.getCell(40).setSystem(new System(2));
+            this.getCell(44).setSystem(new System(1));
+            this.getCell(45).setSystem(new System(1));
+            this.getCell(46).setSystem(new System(1));
+        }
     }
 
     public void setNeighborsFromConfig() {
@@ -190,13 +196,13 @@ public void setSectors() {
         return triPrimes.getFirst();
     }
 
-    public Sector getSector(int id) {
+    public Sector getSector(int id) throws InvalidGameInputExeceptions {
         for (Sector sector : this.sectors) {
             if (sector.getId() == id) {
                 return sector;
             }
         }
-        throw new IllegalGameStateExeceptions("Sector not found");
+        throw new InvalidGameInputExeceptions("Sector not found");
     }
 
     public void resetSystems() {

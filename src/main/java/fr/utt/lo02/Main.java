@@ -5,10 +5,14 @@ import fr.utt.lo02.RmiServer.Client;
 import fr.utt.lo02.RmiServer.Server;
 import fr.utt.lo02.core.Game;
 import fr.utt.lo02.core.Player;
+import fr.utt.lo02.core.components.Ship;
 import fr.utt.lo02.data.DataManipulator;
 import fr.utt.lo02.data.GameDataConverter;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.rmi.RemoteException;
+import java.util.Set;
 
 public class Main {
     // public static Game game;
@@ -53,7 +57,8 @@ public class Main {
         // }
         if (args.length == 1 && args[0].equals("debug")) {
             // Game game = Game.getInstance(new Player[]{new Player("Dodo", 0), new Player("Leo", 1)}, "stonks");
-            Game game = Game.getInstance(DataManipulator.loadSave("model"), "stonks");
+            // Game game = Game.getInstance(DataManipulator.loadSave("model"), "stonks");
+            // Game game = Game.getInstance(DataManipulator.loadSave("feur"), "stonks");
             // game.initIO(new Server());
             // game.playGame();
             // java.lang.System.out.println(GameDataConverter.toJson(game));
@@ -63,9 +68,14 @@ public class Main {
             // game.playRound();
             // java.lang.System.out.println(GameDataConverter.toJson(game));
 
+            // Game game = Game.getInstance(new Player[]{new Player("Dodo", 0), new Player("Leo", 1)}, "stonks", true);
+            Game game = Game.getInstance(DataManipulator.loadSave("feur"), "stonks");
             Server server = new Server();
+            game.initIO(server);
             server.waitForPlayersConnection(game);
             server.startGame();
+            // game.initIO(new CLI(game));
+            // game.playGame();
 
             return;
         }
@@ -79,13 +89,36 @@ public class Main {
 
         // NORMAL MODE
         if (args.length == 1 && args[0].equals("server")) {
-            //TODO : allow user to create a game
+            System.out.println("Wich save do you want to load or create?");
+            Set<String> saves = DataManipulator.getSavesList();
+            for (String name : saves) {
+                System.out.println(name);
+            }
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            String saveName = "default";
+            try {
+                saveName = reader.readLine();
+            } catch (Exception e) {
+                System.out.println("An error occured");
+            }
+            if (saves.contains(saveName)) {
+                Game game = Game.getInstance(DataManipulator.loadSave(saveName), saveName);
+                System.out.println("Game " + saveName + " loaded");
+                Server server = new Server();
+                game.initIO(server);
+                server.waitForPlayersConnection(game);
+                server.startGame();
+            } else {
+                Server server = new Server();
+                Game game = server.waitForNewPlayer(saveName);
+                game.initIO(server);
+                System.out.println("Game " + saveName + " created");
+                server.startGame();
+            }
 
-            // load game and start server
         }
         if (args.length == 1 && args[0].equals("client")) {
-            // ask ip
-            // connect to server
+            Client client = new Client();
         }
     }
 }

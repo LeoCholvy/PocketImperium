@@ -123,6 +123,9 @@ public class Cell {
         return this.isEmpty() || this.getOwner() == player;
     }
     public Ship[] getAvailableShips(int n) {
+        if (n == 0) {
+            return new Ship[0];
+        }
         Ship[] shipsOnCell = this.getShips();
         int i = 0;
         Ship[] availableShips = new Ship[n];
@@ -136,6 +139,15 @@ public class Cell {
             }
         }
         return null;
+    }
+    public int getAvailableShipsCount() {
+        int count = 0;
+        for (Ship ship : this.getShips()) {
+            if (!ship.isUsed()) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public void sustainShips() {
@@ -154,5 +166,12 @@ public class Cell {
         if (this.system != null) {
             this.system.setUsed(false);
         }
+    }
+
+    public boolean isUsed() {
+        return this.used;
+    }
+    public void setUsed(boolean used) {
+        this.used = used;
     }
 }
