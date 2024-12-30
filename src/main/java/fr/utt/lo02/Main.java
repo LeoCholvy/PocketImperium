@@ -120,5 +120,10 @@ public class Main {
         if (args.length == 1 && args[0].equals("client")) {
             Client client = new Client();
         }
+        if (args.length == 1 && args[0].equals("cli")) {
+            Game game = Game.getInstance(new Player[]{new Player("Dodo", 0), new Player("Leo", 1)}, "cli");
+            game.initIO(new CLI(game));
+            game.playGame();
+        }
     }
 }

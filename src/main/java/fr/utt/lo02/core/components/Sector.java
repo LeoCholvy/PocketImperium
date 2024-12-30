@@ -9,7 +9,7 @@ public class Sector {
     @Expose
     private final int id;
     @Expose
-    private boolean used;
+    private boolean used = false;
     @Expose
     private int[] cellIds;
     protected Cell[] cells;

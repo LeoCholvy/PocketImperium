@@ -42,6 +42,7 @@ public class Game {
         instance = this;
         this.players = players;
         this.area = new Area(isDefaultmap);
+        this.resetSectors();
         this.initPlayerIterator();
     }
 

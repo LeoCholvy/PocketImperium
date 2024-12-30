@@ -137,7 +137,7 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
         if (Stream.of(players).map(Player::getId).distinct().count() != players.length) {
             throw new GameRemoteExeceptions("Error while waiting for new player");
         }
-        this.game = Game.getInstance(players, gameName);
+        this.game = Game.getInstance(players, gameName, true);
 
         return this.game;
     }
