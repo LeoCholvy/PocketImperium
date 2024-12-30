@@ -124,6 +124,7 @@ public class Main {
             Game game = Game.getInstance(new Player[]{new Player("Dodo", 0), new Player("Leo", 1)}, "cli");
             game.initIO(new CLI(game));
             game.playGame();
+
         }
     }
 }
