@@ -7,8 +7,6 @@ import fr.utt.lo02.core.Player;
 import java.util.List;
 
 public class Ship {
-    // private static int idCounter = 0;
-    @Expose
     private boolean used;
     @Expose
     private final int id;
