@@ -234,9 +234,6 @@ public class DataManipulator {
      * @return true if the save was successful, false otherwise
      */
     public static boolean saveGame(String name, String json) {
-        // if (getSavesList().contains(name)) {
-        //     return false;
-        // }
         try {
             Files.write(Paths.get("src/ressources/saves/" + name + ".json"), json.getBytes());
             System.out.println("Game saved as " + name);

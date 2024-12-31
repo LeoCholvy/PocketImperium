@@ -9,7 +9,6 @@ import fr.utt.lo02.data.GameDataConverter;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.lang.reflect.Executable;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
@@ -20,18 +19,62 @@ import java.util.stream.Stream;
 
 import static java.lang.System.exit;
 
+/**
+ * The Server class represents the server in the RMI architecture.
+ * It handles client registration, game state management, and communication with clients.
+ */
 public class Server extends UnicastRemoteObject implements ServerRemote, IOHandler {
     private String state = null;
     private Game game;
     private HashMap<Player, ClientRemote> clientsRemote;
     private boolean start;
+    private final static Object lock = new Object();
 
+    /**
+     * Constructs a new Server instance and starts the server.
+     *
+     * @throws RemoteException if a remote communication error occurs
+     */
+    public Server() throws RemoteException {
+        super();
+        this.startServer();
+    }
 
+    /**
+     * Starts the RMI server and binds it to the registry.
+     */
+    private void startServer() {
+        try {
+            LocateRegistry.createRegistry(1099);
+
+            String url = "rmi://localhost:1099/PocketImperium";
+            java.rmi.Naming.rebind(url, this);
+            System.out.println("Server started at " + url);
+            // display the server IP address
+            java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
+            System.out.println("Server IP Address: " + addr.getHostAddress());
+        } catch (Exception e) {
+            throw new GameRemoteExeceptions("Error while creating the server");
+        }
+    }
+
+    /**
+     * Pings the server to check if it is reachable.
+     *
+     * @throws RemoteException if a remote communication error occurs
+     */
     public void ping() throws RemoteException {
         // Do nothing
     }
 
-    public synchronized boolean registerClient(ClientRemote client) throws RemoteException {
+    /**
+     * Registers a client with the server.
+     *
+     * @param client the client to register
+     * @return true if the client could not be registered, false otherwise
+     * @throws RemoteException if a remote communication error occurs
+     */
+    public boolean registerClient(ClientRemote client) throws RemoteException {
         String name = client.getUserName();
         if (this.state != null && this.state.equals("waitingForPlayers")) {
             for (Player p : this.clientsRemote.keySet()) {
@@ -43,7 +86,9 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
                     client.setGameInstance(GameDataConverter.toJson(this.game));
                     System.out.println("Player " + p.getName() + " connected, playerId = " + p.getId());
                     this.clientsRemote.put(p, client);
-                    this.notifyAll();
+                    synchronized (lock) {
+                        lock.notifyAll();
+                    }
                     return false;
                 }
             }
@@ -54,7 +99,9 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
             client.setGameInstance(DataManipulator.loadSave("model"));
             client.setPlayerId(p.getId());
             System.out.println("Player " + p.getName() + " connected, playerId = " + p.getId());
-            this.notifyAll();
+            synchronized (lock) {
+                lock.notifyAll();
+            }
 
             return false;
         } else {
@@ -62,6 +109,13 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
         }
     }
 
+    /**
+     * Sends a message from a player to all other connected clients.
+     *
+     * @param playerId the ID of the player sending the message
+     * @param message the message content
+     * @throws RemoteException if a remote communication error occurs
+     */
     @Override
     public void sendMessages(int playerId, String message) throws RemoteException {
         for (Player p : this.clientsRemote.keySet()) {
@@ -75,29 +129,12 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
         }
     }
 
-
-    public Server() throws RemoteException {
-        super();
-        this.startServer();
-    }
-
-
-    private void startServer() {
-        try {
-            LocateRegistry.createRegistry(1099);
-
-            String url = "rmi://localhost:1099/PocketImperium";
-            java.rmi.Naming.rebind(url, this);
-            System.out.println("Server started at " + url);
-            // display the server ip address
-            java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
-            System.out.println("Server IP Address: " + addr.getHostAddress());
-        } catch (Exception e) {
-            // e.printStackTrace();
-            throw new GameRemoteExeceptions("Error while creating the server");
-        }
-    }
-
+    /**
+     * Waits for new players to join the game.
+     *
+     * @param gameName the name of the game
+     * @return the game instance with the new players
+     */
     public Game waitForNewPlayer(String gameName) {
         this.clientsRemote = new HashMap<>();
         this.state = "waitingNewPlayer";
@@ -109,24 +146,24 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
             try {
                 reader.readLine();
                 this.start = true;
-                synchronized (this) {
-                    this.notifyAll();
+                synchronized (lock) {
+                    lock.notifyAll();
                 }
             } catch (Exception e) {
-                // throw new GameRemoteExeceptions("Error while waiting for new player");
-                e.printStackTrace();
+                // e.printStackTrace();
+                System.out.println("Error while waiting for new player");
             }
         });
         t.start();
 
-        while (!this.start || this.clientsRemote.size() == 3) {
+        while (!this.start && this.clientsRemote.size() < 3) {
             try {
-                synchronized (this) {
-                    this.wait();
+                synchronized (lock) {
+                    lock.wait();
                 }
             } catch (InterruptedException e) {
-                // throw new GameRemoteExeceptions("Error while waiting for new player");
-                e.printStackTrace();
+                // e.printStackTrace();
+                System.out.println("Error while waiting for new player");
             }
         }
 
@@ -142,9 +179,13 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
         return this.game;
     }
 
+    /**
+     * Waits for all players to connect to the game.
+     *
+     * @param game the game instance
+     */
     public void waitForPlayersConnection(Game game) {
         this.game = game;
-        // this.game.initIO(this);
         this.clientsRemote = new HashMap<>();
         for (Player player : Game.getInstance().getHumanPlayers()) {
             this.clientsRemote.put(player, null);
@@ -154,18 +195,18 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
             System.out.println("Waiting for player " + p.getName() + " to connect");
         }
 
-
         this.state = "waitingForPlayers";
         // wait for all players to connect
-        while(!allPlayersConnected()) {
+        while (!allPlayersConnected()) {
             try {
-                // Thread.sleep(1000);
-                synchronized (this) {
-                    this.wait();
+                synchronized (lock) {
+                    lock.wait();
                 }
             } catch (InterruptedException e) {
-                // throw new GameRemoteExeceptions("Error while waiting for players to connect");
                 e.printStackTrace();
+            }
+            if (this.clientsRemote.size() != 3) {
+                System.out.println("Waiting for " + (3 - this.clientsRemote.size()) + " players to connect");
             }
         }
 
@@ -174,6 +215,11 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
         this.state = null;
     }
 
+    /**
+     * Waits for a specific player to reconnect.
+     *
+     * @param p the player to wait for
+     */
     private void waitForPlayerConnection(Player p) {
         this.state = "waitingForPlayers";
         try {
@@ -184,12 +230,13 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
         try {
             this.sendMessages(p.getId(), "deconnected");
         } catch (RemoteException _) {
-
         }
         System.out.println("Waiting for player " + p.getName() + " to reconnect");
         while (this.clientsRemote.get(p) == null) {
             try {
-                Thread.sleep(1000);
+                synchronized (lock) {
+                    lock.wait();
+                }
             } catch (InterruptedException e) {
                 throw new GameRemoteExeceptions("Error while waiting for player " + p.getName() + " to connect");
             }
@@ -198,7 +245,11 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
         System.out.println("Player " + p.getName() + " reconnected");
     }
 
-
+    /**
+     * Checks if all players are connected.
+     *
+     * @return true if all players are connected, false otherwise
+     */
     private boolean allPlayersConnected() {
         for (ClientRemote client : this.clientsRemote.values()) {
             if (client == null) {
@@ -208,7 +259,12 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
         return true;
     }
 
-
+    /**
+     * Displays an error message to all clients.
+     *
+     * @param message the error message
+     * @param playerId the ID of the player
+     */
     public void displayError(String message, int playerId) {
         System.out.println("Error : " + message);
         try {
@@ -220,12 +276,17 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
         }
     }
 
+    /**
+     * Gets the starting cell ID for a player.
+     *
+     * @param playerId the ID of the player
+     * @return the starting cell ID
+     */
     public int getStartingCellId(int playerId) {
         Player p = this.game.getPlayer(playerId);
         this.updateClientGameInstance(p);
         while (true) {
             try {
-                // return this.clientsRemote.get(p).getStartingCellId(playerId);
                 System.out.println("Waiting for player " + p.getName() + " to choose a cell");
                 int cellId = this.clientsRemote.get(p).getStartingCellId(playerId);
                 System.out.println("Player " + p.getName() + " chose cell " + cellId);
@@ -237,6 +298,11 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
         }
     }
 
+    /**
+     * Gets the command orders from all players.
+     *
+     * @return a HashMap containing the command orders for each player
+     */
     public HashMap<Integer, Command[]> getCommandOrders() {
         HashMap<Integer, Command[]> commandOrders = new HashMap<>();
         int nPlayers = this.game.getPlayers().length;
@@ -245,7 +311,6 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
             new Thread(() -> {
                 while (true) {
                     try {
-
                         while (true) {
                             try {
                                 this.clientsRemote.get(p).setGameInstance(GameDataConverter.toJson(this.game));
@@ -256,7 +321,6 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
                             }
                         }
 
-                        // commandOrders.put(p.getId(), this.clientsRemote.get(p).getCommandOrder(p.getId()));
                         System.out.println("Waiting for player " + p.getName() + " to enter commands");
                         Command[] commands = this.clientsRemote.get(p).getCommandOrder(p.getId());
                         System.out.println("Player " + p.getName() + " entered commands");
@@ -282,12 +346,18 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
         return commandOrders;
     }
 
+    /**
+     * Expands the player's ships to new cells.
+     *
+     * @param playerId the ID of the player
+     * @param nShips the number of ships to expand
+     * @return a 2D array where each sub-array contains the cell ID and the number of ships placed on that cell
+     */
     public int[][] expand(int playerId, int nShips) {
         Player p = this.game.getPlayer(playerId);
         this.updateClientGameInstance(p);
         while (true) {
             try {
-                // return this.clientsRemote.get(p).expand(playerId, nShips);
                 System.out.println("Player " + p.getName() + " is expanding");
                 int[][] result = this.clientsRemote.get(p).expand(playerId, nShips);
                 System.out.println("Player " + p.getName() + " expanded");
@@ -300,12 +370,18 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
         }
     }
 
+    /**
+     * Explores new cells with the player's fleet.
+     *
+     * @param playerId the ID of the player
+     * @param nFleet the number of fleets to explore with
+     * @return a 3D array where each sub-array contains the details of the exploration
+     */
     public int[][][] explore(int playerId, int nFleet) {
         Player p = this.game.getPlayer(playerId);
         this.updateClientGameInstance(p);
         while (true) {
             try {
-                // return this.clientsRemote.get(p).explore(playerId, nFleet);
                 System.out.println("Player " + p.getName() + " is exploring");
                 int[][][] result = this.clientsRemote.get(p).explore(playerId, nFleet);
                 System.out.println("Player " + p.getName() + " explored");
@@ -318,12 +394,18 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
         }
     }
 
+    /**
+     * Exterminates enemy ships on specific cells.
+     *
+     * @param playerId the ID of the player
+     * @param nFleet the number of fleets to exterminate
+     * @return a 2D array where each sub-array contains the details of the extermination
+     */
     public int[][] exterminate(int playerId, int nFleet) {
         Player p = this.game.getPlayer(playerId);
         this.updateClientGameInstance(p);
         while (true) {
             try {
-                // return this.clientsRemote.get(p).exterminate(playerId, nFleet);
                 System.out.println("Player " + p.getName() + " is exterminating");
                 int[][] result = this.clientsRemote.get(p).exterminate(playerId, nFleet);
                 System.out.println("Player " + p.getName() + " exterminated");
@@ -336,12 +418,17 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
         }
     }
 
+    /**
+     * Scores a sector for a specific player.
+     *
+     * @param id the ID of the player
+     * @return the ID of the scored sector
+     */
     public int score(int id) {
         Player p = this.game.getPlayer(id);
         this.updateClientGameInstance(p);
         while (true) {
             try {
-                // return this.clientsRemote.get(p).score(id);
                 System.out.println("Player " + p.getName() + " is scoring");
                 int score = this.clientsRemote.get(p).score(id);
                 System.out.println("Player " + p.getName() + " scored the sector " + score);
@@ -353,6 +440,11 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
         }
     }
 
+    /**
+     * Displays the winners of the game.
+     *
+     * @param winnersIds an array of player IDs representing the winners
+     */
     public void displayWinner(int[] winnersIds) {
         this.updateClientGameInstance();
         System.out.println("Winners : " + Arrays.toString(winnersIds));
@@ -369,6 +461,9 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
         }
     }
 
+    /**
+     * Displays a draw message.
+     */
     public void displayDraw() {
         this.updateClientGameInstance();
         System.out.println("Draw");
@@ -385,6 +480,9 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
         }
     }
 
+    /**
+     * Starts the game.
+     */
     public void startGame() {
         this.updateClientGameInstance();
         System.out.println("Starting the game");
@@ -393,16 +491,20 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
         exit(0);
     }
 
+    /**
+     * Updates the game instance for all clients.
+     */
     private void updateClientGameInstance() {
         this.updateClientGameInstance(null);
     }
 
+    /**
+     * Updates the game instance for a specific player.
+     *
+     * @param player the player to update the game instance for
+     */
     private void updateClientGameInstance(Player player) {
         for (Player p : this.clientsRemote.keySet()) {
-            /*
-            * NOTE : using a thread allow a player to reconnect while another is playing
-            * BUT : the player will be ask to play before getting the updated game state
-            * */
             if (p != player) {
                 new Thread(() -> {
                     while (true) {

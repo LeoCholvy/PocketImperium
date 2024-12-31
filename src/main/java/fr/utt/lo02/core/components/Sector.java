@@ -3,12 +3,13 @@ package fr.utt.lo02.core.components;
 import com.google.gson.annotations.Expose;
 import fr.utt.lo02.core.Game;
 
-// public abstract class Sector {
+/**
+ * The Sector class represents a sector in the game area.
+ * It contains information about the sector's ID, usage status, cells, and type.
+ */
 public class Sector {
-    // private static int idCounter = 0;
     @Expose
     private final int id;
-    @Expose
     private boolean used = false;
     @Expose
     private int[] cellIds;
@@ -16,37 +17,80 @@ public class Sector {
     @Expose
     protected SectorType type;
 
-    // public Sector() {
-    //     this.id = idCounter;
-    //     idCounter++;
-    // }
+    /**
+     * Constructs a Sector instance with the specified ID.
+     *
+     * @param id the ID of the sector
+     */
     public Sector(int id) {
         this.id = id;
         this.initType();
     }
+
+    /**
+     * Initializes the type of the sector.
+     * This method should be overridden by subclasses to set the specific type.
+     */
     public void initType() {}
+
+    /**
+     * Returns the ID of the sector.
+     *
+     * @return the ID of the sector
+     */
     public int getId() {
         return this.id;
     }
+
+    /**
+     * Checks if the sector is used.
+     *
+     * @return true if the sector is used, false otherwise
+     */
     public boolean isUsed() {
         return this.used;
     }
+
+    /**
+     * Sets the used status of the sector.
+     *
+     * @param used the used status to set
+     */
     public void setUsed(boolean used) {
         this.used = used;
     }
+
+    /**
+     * Returns the cells in the sector.
+     *
+     * @return an array of cells in the sector
+     */
     public Cell[] getCells() {
         return this.cells;
     }
+
+    /**
+     * Sets the cells in the sector and updates the cell IDs.
+     *
+     * @param cells an array of cells to set in the sector
+     */
     public void setCells(Cell[] cells) {
         this.cells = cells;
-        // add ids to cellIds
         this.cellIds = new int[cells.length];
         for (int i = 0; i < cells.length; i++) {
             this.cellIds[i] = cells[i].getId();
         }
     }
-    // public abstract void generateSystems();
+
+    /**
+     * Generates systems within the sector.
+     * This method should be overridden by subclasses to implement specific system generation logic.
+     */
     public void generateSystems() {}
+
+    /**
+     * Initializes the cells in the sector from the cell IDs.
+     */
     public void initCells() {
         if (this.cellIds == null) {
             return;
@@ -59,12 +103,19 @@ public class Sector {
         }
     }
 
+    /**
+     * Returns the type of the sector.
+     *
+     * @return the type of the sector
+     */
     public SectorType getType() {
         return this.type;
     }
 
     /**
-     * A scorable sector have at least one cell with a system and isn't used
+     * Checks if the sector is scorable.
+     * A scorable sector has at least one cell with a system and is not used.
+     *
      * @return true if the sector is scorable, false otherwise
      */
     public boolean isScorable() {

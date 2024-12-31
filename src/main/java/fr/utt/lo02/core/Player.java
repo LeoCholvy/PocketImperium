@@ -12,15 +12,12 @@ import static fr.utt.lo02.data.DataManipulator.getConfigProperties;
 import java.util.*;
 
 public class Player {
-    // private static int idCounter = 0;
     @Expose
     private final int id;
     @Expose
     private String name;
     @Expose
     private int score;
-    // @Expose
-    // private List<Command> commandsOrder;
     @Expose
     private Ship[] ships;
     @Expose
@@ -34,9 +31,6 @@ public class Player {
      * @param name the name of the player
      */
     public Player(String name, int id) {
-        // give an unique id to the player
-        // this.id = idCounter;
-        // idCounter++;
         this.id = id;
         this.name = name;
         this.score = 0;
@@ -222,11 +216,6 @@ public class Player {
      */
     public void explore(int nFleet) {
         int[][][] input = Game.getInstance().getInput().explore(this.getId(), nFleet);
-        // int[][][] input = [[[30, 2, 22], [22,2, 21]];
-        // int[][][] input = new int[][][]{new int[][]{new int[]{11, 2, 16}}};
-        // int[][][] input = new int[][][]{new int[][]{new int[]{16, 2, 10}}};
-        // int[][][] input = [[[startCellId, nShips, endCellId], [startCellId, nShips, endCellId]], [[startCellId, nShips, endCellId]], ...];
-        //
         // check if the input is valid
         Area area = Game.getInstance().getArea();
         if (input == null) {
@@ -282,9 +271,10 @@ public class Player {
 
         this.resetFleet();
         Map<Cell, Ship[]> fleets = new HashMap<>();
-        // Area area = Game.getInstance().getArea();
+
+
         for (int[][] fleetMove : input) {
-            // System.out.println(Arrays.asList(area.getCell(fleetMove[0][0]).getShips()));
+
             if (!(area.getCell(fleetMove[0][0]).getOwner() == this && area.getCell(fleetMove[0][2]).isAvailable(this))) {
                 Game.getInstance().getInput().displayError("You need to start from a cell you own and end on an empty or owned cell", this.getId());
                 explore(nFleet);
@@ -314,7 +304,7 @@ public class Player {
             for (Ship ship : fleet) {
                 ship.setUsed(true);
             }
-            // fleets.put(area.getCell(fleetMove[0][0]), fleet.toArray(new Ship[0]));
+
             if (fleetMove.length == 2) {
                 fleets.put(area.getCell(fleetMove[1][2]), fleet.toArray(new Ship[0]));
             } else {
@@ -328,7 +318,7 @@ public class Player {
                 ship.setCell(cell);
             }
         }
-        // System.out.println("Fleet moved" + GameDataConverter.toJson(Game.getInstance()));
+
     }
 
 
@@ -485,6 +475,14 @@ public class Player {
         return next;
     }
 
+
+    /**
+     * Check if the player is dead.
+     * This method iterates through all the player's ships and checks if any ship is still on a cell.
+     * If no ships are found on any cell, the player is marked as dead.
+     *
+     * @return true if the player is dead, false otherwise
+     */
     public boolean checkDeath() {
         for (Ship ship : this.ships) {
             if (ship.getCell() != null) {
@@ -495,6 +493,11 @@ public class Player {
         return true;
     }
 
+    /**
+     * Check if the player is human.
+     *
+     * @return true if the player is human, false otherwise
+     */
     public boolean isHuman() {
         return !this.isAI;
     }

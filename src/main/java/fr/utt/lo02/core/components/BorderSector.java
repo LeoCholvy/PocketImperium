@@ -6,17 +6,33 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+/**
+ * The BorderSector class represents a sector located at the border of the game area.
+ * It extends the Sector class and initializes its type to BORDER.
+ */
 public class BorderSector extends Sector {
+    /**
+     * Constructs a BorderSector instance with the specified ID.
+     *
+     * @param id the ID of the sector
+     */
     public BorderSector(int id) {
         super(id);
         this.initType();
     }
 
+    /**
+     * Initializes the type of the sector to BORDER.
+     */
     @Override
     public void initType() {
         this.type = SectorType.BORDER;
     }
 
+    /**
+     * Generates systems within the sector based on the configuration properties.
+     * The number of level 1 and level 2 systems is determined by the properties.
+     */
     @Override
     public void generateSystems() {
         Properties properties = DataManipulator.getSectorProperties();

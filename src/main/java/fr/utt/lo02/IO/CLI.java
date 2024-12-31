@@ -9,20 +9,21 @@ import fr.utt.lo02.core.components.Sector;
 import fr.utt.lo02.data.GameDataConverter;
 
 import java.io.*;
-import java.lang.reflect.Executable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Stream;
 
+/**
+ * The CLI class implements the IOHandler interface and provides a command-line interface for interacting with the game.
+ */
 public class CLI implements IOHandler {
 
     private Game game;
 
     /**
-     * Default constructor
-     * You can use it right after creating the game
-     * Remember : the game need to be initialized with the IOHandler before starting !
+     * Default constructor.
+     * You can use it right after creating the game.
+     * Remember: the game needs to be initialized with the IOHandler before starting!
      * @see Game#initIO(IOHandler)
      */
     public CLI() {
@@ -31,9 +32,21 @@ public class CLI implements IOHandler {
             throw new IllegalGameStateExeceptions("Game not found");
         }
     }
+
+    /**
+     * Constructs a new CLI instance with the specified game.
+     *
+     * @param game the game instance
+     */
     public CLI(Game game) {
         this.game = game;
     }
+
+    /**
+     * Sets the game instance.
+     *
+     * @param game the game instance
+     */
     public void setGameInstance(Game game) {
         this.game = game;
         if (this.game == null) {
@@ -41,11 +54,21 @@ public class CLI implements IOHandler {
         }
     }
 
+    /**
+     * Displays the current game state in JSON format.
+     */
     public void displayGameState() {
         System.out.println("-----------------------------------------------------------");
         System.out.println(GameDataConverter.toJson(this.game));
         System.out.println("-----------------------------------------------------------");
     }
+
+    /**
+     * Prompts the player to choose a starting cell for their ship.
+     *
+     * @param playerid the ID of the player
+     * @return the ID of the chosen starting cell
+     */
     public int getStartingCellId(int playerid) {
         Player player = this.game.getPlayer(playerid);
         displayGameState();
@@ -60,20 +83,34 @@ public class CLI implements IOHandler {
             return getStartingCellId(playerid);
         }
     }
+
+    /**
+     * Displays an error message for a specific player.
+     *
+     * @param message the error message
+     * @param playerId the ID of the player
+     */
     public void displayError(String message, int playerId) {
         System.out.println("\u001B[31mError: " + message + "\u001B[0m");
     }
+
+    /**
+     * Displays an error message.
+     *
+     * @param message the error message
+     */
     public void displayError(String message) {
         System.out.println("\u001B[31mError: " + message + "\u001B[0m");
     }
 
+    /**
+     * Prompts each player to enter their command orders.
+     *
+     * @return a map of player IDs to their chosen command orders
+     */
     public HashMap<Integer, Command[]> getCommandOrders() {
         HashMap<Integer, Command[]> orders = new HashMap<>();
-        // ask each player their order
         for (Player player : this.game.getAlivePlayers()) {
-            // TODO : check if the player is human
-
-
             System.out.println("Player " + player.getName() + ", enter your command");
             System.out.println("1. Expand");
             System.out.println("2. Explore");
@@ -84,11 +121,8 @@ public class CLI implements IOHandler {
                 System.out.print(">>>");
                 String input = reader.readLine();
                 Command[] commands = new Command[3];
-                // input need to be 3 characters
-                // contains 1,2,3 and no duplicate
                 if (input.length() != 3 || !input.contains("1") || !input.contains("2") || !input.contains("3")) {
                     displayError("Invalid input, please enter a valid command");
-                    // FIXME : need to ask the player again and not every player
                     return getCommandOrders();
                 }
                 for (int i = 0; i < 3; i++) {
@@ -109,10 +143,16 @@ public class CLI implements IOHandler {
         return orders;
     }
 
+    /**
+     * Prompts the player to choose cells to expand their ships to.
+     *
+     * @param playerId the ID of the player
+     * @param nShips the number of ships to expand
+     * @return a 2D array where each sub-array contains the cell ID and the number of ships placed on that cell
+     */
     public int[][] expand(int playerId, int nShips) {
         ArrayList<int[]> ships = new ArrayList<>();
         Player player = this.game.getPlayer(playerId);
-        // displayGameState();
         int nShipsMax = Math.min(nShips, player.getNumberAvailableShips());
         System.out.println("Player " + player.getName() + ", you have " + nShipsMax + " ships to expand");
         while (nShipsMax > 0) {
@@ -155,6 +195,13 @@ public class CLI implements IOHandler {
         return ships.toArray(new int[0][0]);
     }
 
+    /**
+     * Prompts the player to choose cells to explore with their fleet.
+     *
+     * @param playerId the ID of the player
+     * @param nFleet the number of fleets to explore with
+     * @return a 3D array where each sub-array contains the details of the exploration
+     */
     public int[][][] explore(int playerId, int nFleet) {
         List<List<int[]>> input = new ArrayList<>();
         Player player = this.game.getPlayer(playerId);
@@ -185,7 +232,6 @@ public class CLI implements IOHandler {
             if (startCellId == -1) {
                 break;
             }
-            // FIXME : not the right way to do it, we need to check if the ship is used !!!!
             System.out.println(i + "How many ships do you want to move ? (max " + area.getCell(startCellId).getShips().length + ")");
             while (true) {
                 try {
@@ -214,7 +260,8 @@ public class CLI implements IOHandler {
                     if (area.getCell(destCellId).getOwner() != player && area.getCell(destCellId).getOwner() != null) {
                         throw new IllegalGameStateExeceptions("This cell is already owned by another player");
                     }
-                    if (area.getCell(startCellId).distance(area.getCell(destCellId), 2) != 1) {
+                    Integer distance = area.getCell(startCellId).distance(area.getCell(destCellId), 2);
+                    if (distance == null || distance >= 2) {
                         throw new IllegalGameStateExeceptions("The destination cell is not a neighbor of the starting cell");
                     }
                     break;
@@ -231,7 +278,7 @@ public class CLI implements IOHandler {
             }
             fleet.add(new int[]{startCellId, nShips, destCellId});
 
-            System.out.println(i+"Do you want to move the fleet further ? (y/n)");
+            System.out.println(i + "Do you want to move the fleet further ? (y/n)");
             String response;
             try {
                 System.out.print(i + ">>>");
@@ -242,7 +289,7 @@ public class CLI implements IOHandler {
             }
             int nShips2, destCellId2;
             if (response.equalsIgnoreCase("y") || response.equalsIgnoreCase("yes")) {
-                System.out.println(i+"How many ships do you want to add to your fleet ? (max " + area.getCell(destCellId).getShips().length + ")");
+                System.out.println(i + "How many ships do you want to add to your fleet ? (max " + area.getCell(destCellId).getShips().length + ")");
                 while (true) {
                     try {
                         System.out.print(i + ">>>");
@@ -259,7 +306,7 @@ public class CLI implements IOHandler {
                         continue;
                     }
                 }
-                System.out.println(i+"Choose the destination cell for the fleet");
+                System.out.println(i + "Choose the destination cell for the fleet");
                 while (true) {
                     try {
                         System.out.print(i + ">>>");
@@ -270,7 +317,8 @@ public class CLI implements IOHandler {
                         if (area.getCell(destCellId2).getOwner() != player && area.getCell(destCellId2).getOwner() != null) {
                             throw new IllegalGameStateExeceptions("This cell is already owned by another player");
                         }
-                        if (area.getCell(destCellId).distance(area.getCell(destCellId2), 2) != 1) {
+                        Integer distance = area.getCell(destCellId).distance(area.getCell(destCellId2), 2);
+                        if (distance == null || distance >= 2) {
                             throw new IllegalGameStateExeceptions("The destination cell is not a neighbor of the starting cell");
                         }
                         break;
@@ -285,29 +333,24 @@ public class CLI implements IOHandler {
                 if (destCellId2 == -1) {
                     break;
                 }
-                fleet.add(new int[]{destCellId,nShips2, destCellId2});
+                fleet.add(new int[]{destCellId, nShips2, destCellId2});
             }
             input.add(fleet);
-
-            // System.out.println("Do you want to move another fleet ? (y/n)");
-            // try {
-            //     System.out.print(">>>");
-            //     response = reader.readLine();
-            // } catch (Exception e) {
-            //     displayError("Invalid input, please enter a number");
-            //     continue;
-            // }
-            // if (response.equalsIgnoreCase("n") || response.equalsIgnoreCase("no")) {
-            //     break;
-            // }
         }
-        int [][][] result = new int[input.size()][][];
+        int[][][] result = new int[input.size()][][];
         for (int i = 0; i < input.size(); i++) {
             result[i] = input.get(i).toArray(new int[0][0]);
         }
         return result;
     }
 
+    /**
+     * Prompts the player to choose cells to exterminate enemy ships.
+     *
+     * @param playerId the ID of the player
+     * @param nSystem the number of systems to exterminate
+     * @return a 2D array where each sub-array contains the details of the extermination
+     */
     public int[][] exterminate(int playerId, int nSystem) {
         List<List<Integer>> input = new ArrayList<>();
         Game game = this.game;
@@ -318,9 +361,9 @@ public class CLI implements IOHandler {
         for (int i = 0; i < nSystem; i++) {
             List<Integer> currentAttack = new ArrayList<>();
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            System.out.println(i+"Player " + player.getName() + ", chose a cell to exterminate");
-            System.out.println(i+"You have " + nSystem + " attacks left, write -1 to stop");
-            System.out.println(i+"Remember : you can't use the same ship twice in a round, and you can only exterminate cells once per round");
+            System.out.println(i + "Player " + player.getName() + ", chose a cell to exterminate");
+            System.out.println(i + "You have " + nSystem + " attacks left, write -1 to stop");
+            System.out.println(i + "Remember: you can't use the same ship twice in a round, and you can only exterminate cells once per round");
             int cellId, id, nShips, max;
             while (true) {
                 try {
@@ -329,13 +372,12 @@ public class CLI implements IOHandler {
                     if (cellId == -1) {
                         break;
                     }
-                    // check all the i[0] of input and if on of them is equal to cellId, throw an error
                     int finalCellId = cellId;
                     if (input.stream().anyMatch(list -> list.get(0) == finalCellId)) {
                         throw new IllegalGameStateExeceptions("You can't exterminate the same cell twice in a round");
                     }
                     if (area.getCell(cellId).getOwner() == player || area.getCell(cellId).getOwner() == null) {
-                        throw new IllegalGameStateExeceptions("You can't exterminate this cell, it need to be controled by another player");
+                        throw new IllegalGameStateExeceptions("You can't exterminate this cell, it needs to be controlled by another player");
                     }
                     break;
                 } catch (IllegalGameStateExeceptions e) {
@@ -350,14 +392,15 @@ public class CLI implements IOHandler {
                 break;
             }
             while (true) {
-                System.out.println(i+"Choose a cell from where you want to attack");
+                System.out.println(i + "Choose a cell from where you want to attack");
                 try {
                     System.out.print(i + ">>>");
                     id = Integer.parseInt(reader.readLine());
                     if (id == -1) {
                         break;
                     }
-                    if (area.getCell(cellId).distance(area.getCell(id), 2) == null) {
+                    Integer distance = area.getCell(cellId).distance(area.getCell(id), 2);
+                    if (distance == null || distance >= 2) {
                         throw new IllegalGameStateExeceptions("The destination cell is not a neighbor of the starting cell");
                     }
                     if (area.getCell(id).getOwner() != player) {
@@ -372,9 +415,8 @@ public class CLI implements IOHandler {
                     continue;
                 }
 
-
                 max = area.getCell(id).getShips().length;
-                System.out.println(i+"How many ships do you want to use for this attack ? (max " + max + ")");
+                System.out.println(i + "How many ships do you want to use for this attack? (max " + max + ")");
                 try {
                     System.out.print(i + ">>>");
                     nShips = Integer.parseInt(reader.readLine());
@@ -399,14 +441,18 @@ public class CLI implements IOHandler {
             }
             input.add(currentAttack);
         }
-        // convert list<list<int>> to int[][]
         int[][] result = new int[input.size()][];
         for (int i = 0; i < input.size(); i++) {
             result[i] = input.get(i).stream().mapToInt(Integer::intValue).toArray();
         }
         return result;
     }
-
+    /**
+     * Prompts the player to choose a sector to score.
+     *
+     * @param id the ID of the player
+     * @return the ID of the scored sector
+     */
     public int score(int id) {
         List<Sector> scorableSectors = this.game.getScorablesSectors();
         System.out.println("Scorable sectors : ");
@@ -439,22 +485,31 @@ public class CLI implements IOHandler {
         return sectorId;
     }
 
+    /**
+     * Displays the winners of the game.
+     *
+     * @param winnersIds an array of player IDs representing the winners
+     */
     public void displayWinner(int[] winnersIds) {
         System.out.println("---------------------Congratulations !---------------------");
         for (int id : winnersIds) {
             System.out.println("Player " + this.game.getPlayer(id).getName() + " win !");
         }
-        // System.out.println("-----------------------------------------------------------");
         displayScore();
     }
 
+    /**
+     * Displays a draw message.
+     */
     public void displayDraw() {
         System.out.println("---------------------Congratulations !---------------------");
         System.out.println("It's a draw !");
-        // System.out.println("-----------------------------------------------------------");
         displayScore();
     }
 
+    /**
+     * Displays the scoreboard with the scores of all players.
+     */
     private void displayScore() {
         System.out.println("-----------------------Scoreboard--------------------------");
         for (Player player : this.game.getPlayers()) {

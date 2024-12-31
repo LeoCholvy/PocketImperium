@@ -32,7 +32,9 @@ public class Game {
 
     /**
      * Constructor for the Game class.
+     *
      * @param players the array of players in the game
+     * @param isDefaultmap whether the default map is used
      * @throws IllegalStateException if an instance of the game already exists
      */
     private Game(Player[] players, boolean isDefaultmap) {
@@ -46,19 +48,30 @@ public class Game {
         this.initPlayerIterator();
     }
 
+    /**
+     * Initializes the player iterator by setting the next player for each player.
+     */
     public void initPlayerIterator() {
         int n = this.players.length;
         for (int i = 0 ; i < n ; i++) {
             this.players[i].setNextPlayer(this.players[(i + 1) % n]);
         }
     }
+
+    /**
+     * Returns the starting player of the game.
+     *
+     * @return the starting player
+     */
     public Player getStartingPlayer() {
         return this.players[this.startingPlayerIndex];
     }
 
     /**
-     * Get the instance of the game.
+     * Returns the instance of the game.
+     *
      * @return the instance of the game
+     * @throws IllegalGameStateExeceptions if the game is not created
      */
     public static Game getInstance() {
         if (instance == null) {
@@ -68,10 +81,12 @@ public class Game {
     }
 
     /**
-     * Get the instance of the game.
+     * Returns the instance of the game.
+     *
      * @param players the array of players in the game
+     * @param name the name of the game
      * @return the instance of the game
-     * @throws IllegalGameStateExeceptions if an instance of the game already exists
+     * @throws IllegalGameStateExeceptions if an instance of the game already exists or the number of players is not between 2 and 3
      */
     public static Game getInstance(Player[] players, String name) {
         if (instance != null) {
@@ -85,6 +100,15 @@ public class Game {
         return game;
     }
 
+    /**
+     * Returns the instance of the game.
+     *
+     * @param players the array of players in the game
+     * @param name the name of the game
+     * @param isDefaultmap whether the default map is used
+     * @return the instance of the game
+     * @throws IllegalGameStateExeceptions if an instance of the game already exists
+     */
     public static Game getInstance(Player[] players, String name, boolean isDefaultmap) {
         if (instance != null) {
             throw new IllegalGameStateExeceptions("Game already created");
@@ -95,11 +119,12 @@ public class Game {
     }
 
     /**
-     * Get the instance of the game.
+     * Returns the instance of the game from a JSON representation.
+     *
      * @param json the JSON representation of the game
+     * @param name the name of the game
      * @return the instance of the game
-     * When loading the game from JSON data, the neighbors of the areas and the cells of the ships must be initialized.
-     * You also need to manually initialize the IOHandlers of the players.
+     *
      * @see Game#initIO(IOHandler)
      * @see IOHandler
      */
@@ -107,6 +132,12 @@ public class Game {
         return GameDataConverter.fromJson(json, name);
     }
 
+    /**
+     * Returns the instance of the game from a JSON representation.
+     *
+     * @param json the JSON representation of the game
+     * @return the instance of the game
+     */
     public static Game getInstance(String json) {
         return GameDataConverter.fromJson(json, null);
     }
@@ -142,29 +173,6 @@ public class Game {
         }
     }
 
-    /**
-     * Cycle through players to find the next player.
-     * @param n the number of players to cycle through
-     * @return the next player
-     * @throws IllegalStateException if no player is found
-     */
-    // private Player cyclePlayers(int n) {
-    //     if (n == 0) {
-    //         return this.players[this.startingPlayerIndex];
-    //     }
-    //     int p = this.startingPlayerIndex;
-    //     int i = 0;
-    //     int nPlayers = this.players.length;
-    //     while (i < nPlayers) {
-    //         p = (p + 1) % nPlayers;
-    //         if (!this.players[p].isDead()) {
-    //             if (++i == n) {
-    //                 return this.players[p];
-    //             }
-    //         }
-    //     }
-    //     throw new IllegalStateException("No player found");
-    // }
 
     /**
      * Cycle to the next starting player.
@@ -196,7 +204,6 @@ public class Game {
         int n = players.length;
         // this list represent the order how the player will chose the cell to place the ships
         Player[] players_order = new Player[n*2];
-        // NOTE : we could have used this.cyclePlayers(n)
         for (int i = 0; i < n; i++) {
             players_order[i] = this.players[(i + startingPlayerIndex) % n];
             players_order[n * 2 - 1 - i] = this.players[(i + startingPlayerIndex) % n];
@@ -337,18 +344,12 @@ public class Game {
     private boolean microPhase2(HashMap<Player, Command> commands) {
         // priority Expand then Explore the Exterminate
         // we start from the starting player
-        // int p = this.startingPlayerIndex;
-        // int n = this.getAlivePlayers().length;
         int l;
         //1. Expand
         // l <- number of player who expand
         l = (int) Stream.of(commands.values().toArray()).filter(command -> command == Command.EXPAND).count();
-        // for (int i = 0; i < n; i++) {
-        //     Player player = this.cyclePlayers(i);
-        //     if (commands.get(player) == Command.EXPAND) {
-        //         player.expand(4 - l);
-        //     }
-        // }
+
+        // players is used as an iterator
         Player p = this.getStartingPlayer();
         while (p != null) {
             if (commands.get(p) == Command.EXPAND) {
@@ -359,12 +360,7 @@ public class Game {
 
         // 2. Explore
         l = (int) Stream.of(commands.values().toArray()).filter(command -> command == Command.EXPLORE).count();
-        // for (int i = 0; i < n; i++) {
-        //     Player player = this.cyclePlayers(i);
-        //     if (commands.get(player) == Command.EXPLORE) {
-        //         player.explore(4 - l);
-        //     }
-        // }
+
         p = this.getStartingPlayer();
         while (p != null) {
             if (commands.get(p) == Command.EXPLORE) {
@@ -375,12 +371,6 @@ public class Game {
 
         // 3. Exterminate
         l = (int) Stream.of(commands.values().toArray()).filter(command -> command == Command.EXTERMINATE).count();
-        // for (int i = 0; i < n; i++) {
-        //     Player player = this.cyclePlayers(i);
-        //     if (commands.get(player) == Command.EXTERMINATE) {
-        //         player.exterminate(4-l);
-        //     }
-        // }
         // we use Player as an iterator (kind of)
         p = this.getStartingPlayer();
         while (p != null) {
@@ -429,43 +419,7 @@ public class Game {
      * Sustains ships and scores sectors.
      */
     private void phase3() {
-        // OLD :
-        // // sustain ships
-        // for (Cell cell : this.getArea().getGrid()) {
-        //     Ship[] ships = cell.getShips();
-        //     if (ships.length == 0) {
-        //         continue;
-        //     }
-        //     // raise error if the ships are not all from the same player
-        //     Player c = ships[0].getPlayer();
-        //     for (Ship ship : ships) {
-        //         if (ship.getPlayer() != c) {
-        //             System.out.println("State of the game when the error occurred :");
-        //             System.out.println(GameDataConverter.toJson(this));
-        //             throw new IllegalStateException("The ships in the same cell must be from the same player");
-        //         }
-        //     }
-        //
-        //     int maxShips;
-        //     if (cell.getSystem() != null) {
-        //         maxShips = cell.getSystem().getLevel() + 1;
-        //     } else {
-        //         maxShips = 1;
-        //     }
-        //
-        //     for (int i = maxShips; i < ships.length; i++) {
-        //         ships[i].setCell(null);
-        //     }
-        // }
-        // // score sectors
-        // for (int i = 0; i < this.getAlivePlayers().length; i++) {
-        //     this.cyclePlayers(i).score();
-        // }
-        // // if
-
-        // NEW :
         this.area.sustainShips();
-
         this.scoreSectors();
     }
 
@@ -491,16 +445,23 @@ public class Game {
         return false;
     }
 
+    /**
+     * Get the scorable sectors.
+     * @return a list of scorable sectors
+     */
     public List<Sector> getScorablesSectors() {
         return Stream.of(this.area.getSectors()).filter(Sector::isScorable).toList();
     }
 
+    /**
+     * Score the sectors.
+     */
     private void scoreSectors() {
         this.resetSectors();
         Player p = this.getStartingPlayer();
         while (!(p == null || this.getScorablesSectors().isEmpty())) {
             // TODO : remove this line:
-            System.out.println("Scorable sectors: " + this.getScorablesSectors().stream().map(Sector::getId).collect(Collectors.toList()) + this.getScorablesSectors().size());
+            System.out.println("Scorable sectors: " + this.getScorablesSectors().stream().map(Sector::getId).collect(Collectors.toList()));
             p.score();
             p = p.next(); // NOTE : p.next() will return null if we looped through all the players
         }
@@ -529,6 +490,9 @@ public class Game {
         return false;
     }
 
+    /**
+     * End the game.
+     */
     private void endGame() {
         if (this.getAlivePlayers().length == 1 && !this.getScorablesSectors().isEmpty()) {
             this.getAlivePlayers()[0].score(2);
@@ -577,24 +541,44 @@ public class Game {
         this.input = io;
     }
 
+    /**
+     * Get the players of the game.
+     * @return the players of the game
+     */
     public Player[] getPlayers() {
         return this.players;
     }
 
+    /**
+     * Set the name of the game.
+     * @param name the name of the game
+     */
     public void setName(String name) {
         if (this.name != null) {
             throw new IllegalGameStateExeceptions("The name of the game can only be set once");
         }
         this.name = name;
     }
+    /**
+     * Get the name of the game.
+     * @return the name of the game
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * Get the human players of the game.
+     * @return the human players of the game
+     */
     public List<Player> getHumanPlayers() {
         return Stream.of(this.players).filter(Player::isHuman).toList();
     }
 
+    /**
+     * Get the AI players of the game.
+     * @return the AI players of the game
+     */
     public int getRound() {
         return this.round;
     }

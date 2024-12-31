@@ -38,54 +38,57 @@ enum InputState {
 }
 
 public class GUI implements GUIIOHandler {
-    private final static HashMap<Integer, int[]> coords = new HashMap<>(){{
-        put(0, new int[]{200,299});
-        put(1, new int[]{32,60});
-        put(2, new int[]{100,57});
-        put(3, new int[]{168,62});
-        put(4, new int[]{234,63});
-        put(5, new int[]{299,60});
-        put(6, new int[]{367,63});
-        put(7, new int[]{68,123});
-        put(8, new int[]{134,119});
-        put(9, new int[]{202,125});
-        put(10, new int[]{266,121});
-        put(11, new int[]{332,119});
-        put(12, new int[]{34,179});
-        put(13, new int[]{100,181});
-        put(14, new int[]{166,182});
-        put(15, new int[]{232,182});
-        put(16, new int[]{300,179});
-        put(17, new int[]{366,183});
-        put(18, new int[]{66,240});
-        put(19, new int[]{133,239});
-        put(20, new int[]{33,303});
-        put(21, new int[]{99,301});
-        put(22, new int[]{66,360});
-        put(23, new int[]{133,359});
-        put(24, new int[]{267,239});
-        put(25, new int[]{332,241});
-        put(26, new int[]{300,300});
-        put(27, new int[]{365,301});
-        put(28, new int[]{267,360});
-        put(29, new int[]{332,359});
-        put(30, new int[]{33,421});
-        put(31, new int[]{98,421});
-        put(32, new int[]{167,421});
-        put(33, new int[]{232,419});
-        put(34, new int[]{300,421});
-        put(35, new int[]{365,421});
-        put(36, new int[]{66,481});
-        put(37, new int[]{132,479});
-        put(38, new int[]{198,481});
-        put(39, new int[]{266,479});
-        put(40, new int[]{332,481});
-        put(41, new int[]{32,538});
-        put(42, new int[]{100,541});
-        put(43, new int[]{166,539});
-        put(44, new int[]{231,539});
-        put(45, new int[]{300,541});
-        put(46, new int[]{366,539});
+    /**
+     * Map of the coordinates of the cells in the GUI
+     */
+    private final static HashMap<Integer, int[]> coords = new HashMap<>() {{
+        put(0, new int[]{200, 299});
+        put(1, new int[]{32, 60});
+        put(2, new int[]{100, 57});
+        put(3, new int[]{168, 62});
+        put(4, new int[]{234, 63});
+        put(5, new int[]{299, 60});
+        put(6, new int[]{367, 63});
+        put(7, new int[]{68, 123});
+        put(8, new int[]{134, 119});
+        put(9, new int[]{202, 125});
+        put(10, new int[]{266, 121});
+        put(11, new int[]{332, 119});
+        put(12, new int[]{34, 179});
+        put(13, new int[]{100, 181});
+        put(14, new int[]{166, 182});
+        put(15, new int[]{232, 182});
+        put(16, new int[]{300, 179});
+        put(17, new int[]{366, 183});
+        put(18, new int[]{66, 240});
+        put(19, new int[]{133, 239});
+        put(20, new int[]{33, 303});
+        put(21, new int[]{99, 301});
+        put(22, new int[]{66, 360});
+        put(23, new int[]{133, 359});
+        put(24, new int[]{267, 239});
+        put(25, new int[]{332, 241});
+        put(26, new int[]{300, 300});
+        put(27, new int[]{365, 301});
+        put(28, new int[]{267, 360});
+        put(29, new int[]{332, 359});
+        put(30, new int[]{33, 421});
+        put(31, new int[]{98, 421});
+        put(32, new int[]{167, 421});
+        put(33, new int[]{232, 419});
+        put(34, new int[]{300, 421});
+        put(35, new int[]{365, 421});
+        put(36, new int[]{66, 481});
+        put(37, new int[]{132, 479});
+        put(38, new int[]{198, 481});
+        put(39, new int[]{266, 479});
+        put(40, new int[]{332, 481});
+        put(41, new int[]{32, 538});
+        put(42, new int[]{100, 541});
+        put(43, new int[]{166, 539});
+        put(44, new int[]{231, 539});
+        put(45, new int[]{300, 541});
+        put(46, new int[]{366, 539});
     }};
 
     private JFrame frame;
@@ -102,31 +105,47 @@ public class GUI implements GUIIOHandler {
     private Game game;
     private String[] textInfo = new String[]{"info", "Waiting for your turn"};
     private int tempMaxNumber;
-    private Object lock = new Object();
+    private final static Object lock = new Object();
     private boolean skipable = false;
 
+    /**
+     * Constructor
+     */
     public GUI() {
         // init the frame
         this.frame = new JFrame("Pocket Imperium");
         this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
+    /**
+     * Set the game instance and update the GUI
+     *
+     * @param game
+     */
     public void setGameInstance(Game game) {
         this.game = game;
         this.displayGame();
     }
 
+    /**
+     * Display the game.
+     * This method updates the GUI to show the current state of the game.
+     * It removes all existing components from the frame, sets the frame title,
+     * and adds the game panel with the map and ships.
+     * It also handles mouse clicks on the map to get the clicked cell.
+     */
     public synchronized void displayGame() {
         this.frame.getContentPane().removeAll();
         // this.state = State.GAME;
 
         // change frame name
-        this.frame.setTitle("PocketImperium - "+this.username);
+        this.frame.setTitle("PocketImperium - " + this.username);
 
         JPanel gamePanel = new JPanel();
 
         this.displayTopPanel(gamePanel);
 
+        // load the map image
         BufferedImage map;
         try {
             map = ImageIO.read(new File("src/ressources/assets/map.png"));
@@ -141,23 +160,23 @@ public class GUI implements GUIIOHandler {
         }
         JLabel mapLabel = new JLabel(new ImageIcon(map));
 
+        // display the ships (number of ships on each cell)
         this.displayShips(gamePanel);
 
-        mapLabel.setBounds(0,this.panelHeight,w,h);
+        mapLabel.setBounds(0, this.panelHeight, w, h);
         gamePanel.setLayout(null);
         gamePanel.add(mapLabel);
 
         this.frame.add(gamePanel);
 
-
-
+        // handle the click on the map
         mapLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (GUI.this.inputState == InputState.CELL) {
                     int x = e.getX();
                     int y = e.getY();
-                    int cellId = GUI.getClickedCell(x,y);
+                    int cellId = GUI.getClickedCell(x, y);
                     GUI.this.tempInputValue = cellId;
                     synchronized (GUI.this) {
                         GUI.this.notifyAll();
@@ -166,17 +185,24 @@ public class GUI implements GUIIOHandler {
             }
         });
 
-        this.frame.setSize(w+15, this.panelHeight+h+38);
+        this.frame.setSize(w + 15, this.panelHeight + h + 38);
         // this.frame.pack();
         this.frame.setResizable(false);
         this.frame.setVisible(true);
     }
 
+    /**
+     * Display the top panel of the game.
+     * This method updates the top panel of the game based on the current input state.
+     * It handles different input states such as IDLE, CELL, NUMBER, and COMMAND.
+     *
+     * @param gamePanel the JPanel to which the top panel components will be added
+     */
     private synchronized void displayTopPanel(JPanel gamePanel) {
         if (this.inputState == InputState.IDLE || this.inputState == InputState.CELL) {
             if (this.inputState == InputState.CELL && this.skipable) {
                 JButton skip = new JButton("Skip");
-                skip.setBounds(this.w-100, this.panelHeight-15, 100, 15);
+                skip.setBounds(this.w - 100, this.panelHeight - 15, 100, 15);
                 gamePanel.add(skip);
                 skip.addActionListener(e -> {
                     this.tempInputValue = -1;
@@ -215,11 +241,11 @@ public class GUI implements GUIIOHandler {
             panelColor.setBounds(0, 0, this.w, this.panelHeight);
             gamePanel.add(panelColor);
         } else if (this.inputState == InputState.NUMBER) {
-            JButton[] numberButtons = new JButton[this.tempMaxNumber+1];
+            JButton[] numberButtons = new JButton[this.tempMaxNumber + 1];
             for (int i = 0; i <= this.tempMaxNumber; i++) {
                 if (this.skipable) {
                     JButton skip = new JButton("Skip");
-                    skip.setBounds(this.w-100, this.panelHeight-15, 100, 15);
+                    skip.setBounds(this.w - 100, this.panelHeight - 15, 100, 15);
                     gamePanel.add(skip);
                     skip.addActionListener(e -> {
                         this.tempInputValue = -1;
@@ -229,11 +255,10 @@ public class GUI implements GUIIOHandler {
                     });
                 }
 
-
                 numberButtons[i] = new JButton(String.valueOf(i));
                 numberButtons[i].setFont(new Font("Arial", Font.PLAIN, 14));
                 int l = 20;
-                numberButtons[i].setBounds((int)(i*l*2.3), this.panelHeight-l, (int) (l*2.3), l);
+                numberButtons[i].setBounds((int) (i * l * 2.3), this.panelHeight - l, (int) (l * 2.3), l);
                 gamePanel.add(numberButtons[i]);
                 int finalI = i;
                 numberButtons[i].addActionListener(e -> {
@@ -255,7 +280,7 @@ public class GUI implements GUIIOHandler {
             }
             label.setOpaque(true);
             label.setBackground(Color.WHITE);
-            label.setBounds(0,0,this.w, this.panelHeight/2);
+            label.setBounds(0, 0, this.w, this.panelHeight / 2);
             gamePanel.add(label);
         } else if (this.inputState == InputState.COMMAND) {
             DefaultListModel<String> listModel = new DefaultListModel<>();
@@ -282,7 +307,7 @@ public class GUI implements GUIIOHandler {
                 @Override
                 protected Transferable createTransferable(JComponent c) {
                     JList<?> source = (JList<?>) c;
-                    draggedIndex = source.getSelectedIndex(); // Stocke l'index de l'élément glissé
+                    draggedIndex = source.getSelectedIndex(); // Store the index of the dragged element
                     return new StringSelection(source.getSelectedValue().toString());
                 }
 
@@ -306,9 +331,9 @@ public class GUI implements GUIIOHandler {
                         JList<String> target = (JList<String>) support.getComponent();
                         DefaultListModel<String> listModel = (DefaultListModel<String>) target.getModel();
 
-                        // Ajuste l'index si nécessaire
+                        // Adjust the index if necessary
                         if (draggedIndex < dropIndex) {
-                            dropIndex--; // L'élément glissé est temporairement retiré, donc l'indice diminue
+                            dropIndex--; // The dragged element is temporarily removed, so the index decreases
                         }
 
                         listModel.add(dropIndex, data);
@@ -316,19 +341,17 @@ public class GUI implements GUIIOHandler {
 
                         return true;
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        // ex.printStackTrace();
                         return false;
                     }
                 }
             });
 
-            // frame.add(new JScrollPane(list), BorderLayout.CENTER);
-            // frame.setVisible(true);
             JScrollPane scrollPane = new JScrollPane(list);
             scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
             scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
             scrollPane.setWheelScrollingEnabled(false);
-            scrollPane.setBounds(0,this.panelHeight/2,this.w-100,this.panelHeight/2);
+            scrollPane.setBounds(0, this.panelHeight / 2, this.w - 100, this.panelHeight / 2);
             scrollPane.setBackground(Color.BLUE);
             gamePanel.add(scrollPane);
 
@@ -345,8 +368,8 @@ public class GUI implements GUIIOHandler {
                     commands_list.add(listModel.getElementAt(i));
                 }
                 Command[] commands = new Command[3];
-                for (int i=0;i<3;i++){
-                    if (commands_list.get(i).equals("Expand")){
+                for (int i = 0; i < 3; i++) {
+                    if (commands_list.get(i).equals("Expand")) {
                         commands[i] = Command.EXPAND;
                     } else if (commands_list.get(i).equals("Explore")) {
                         commands[i] = Command.EXPLORE;
@@ -360,9 +383,8 @@ public class GUI implements GUIIOHandler {
                     notifyAll();
                 }
             });
-            submitButton.setBounds(this.w-100,this.panelHeight/2,100, this.panelHeight/2);
+            submitButton.setBounds(this.w - 100, this.panelHeight / 2, 100, this.panelHeight / 2);
             gamePanel.add(submitButton);
-
 
             // info
             String txt = this.textInfo[1];
@@ -375,20 +397,28 @@ public class GUI implements GUIIOHandler {
             }
             label.setOpaque(true);
             label.setBackground(Color.WHITE);
-            label.setBounds(0,0,this.w, this.panelHeight/2);
+            label.setBounds(0, 0, this.w, this.panelHeight / 2);
             gamePanel.add(label);
         }
     }
 
+    /**
+     * Display the ships on the game panel.
+     * This method iterates through the coordinates of the cells and displays the number of ships on each cell.
+     * It creates a JLabel for each cell with ships and sets its text to show the number of available and total ships.
+     * The label is then added to the game panel.
+     *
+     * @param gamePanel the JPanel to which the ship labels will be added
+     */
     private void displayShips(JPanel gamePanel) {
-        for (int id : coords.keySet()){
+        for (int id : coords.keySet()) {
             int nb = this.game.getArea().getCell(id).getShips().length;
             if (nb == 0) {
                 continue;
             }
 
             int nbA = this.game.getArea().getCell(id).getAvailableShipsCount();
-            String txt = String.valueOf(nbA)+"+"+String.valueOf(nb-nbA);
+            String txt = String.valueOf(nbA) + "+" + String.valueOf(nb - nbA);
             if (nbA == nb) {
                 txt = String.valueOf(nb);
             }
@@ -399,14 +429,18 @@ public class GUI implements GUIIOHandler {
             centerLabel.setForeground(this.playersColor[this.game.getArea().getCell(id).getOwner().getId()]);
             int x = coords.get(id)[0];
             int y = coords.get(id)[1] + this.panelHeight;
-            // centerLabel.setBounds(x-7,y-10, 15, 20);
-            centerLabel.setBounds(x-20,y-10, 40, 20);
+            centerLabel.setBounds(x - 20, y - 10, 40, 20);
             gamePanel.add(centerLabel);
         }
     }
 
+    /**
+     * Display the form for entering server IP and username.
+     * This method creates a form with input fields for the server IP and username.
+     * It also adds a submit button that, when clicked, stores the input values and notifies any waiting threads.
+     */
     public synchronized void displayForm() {
-        this.frame.setSize(300,150);
+        this.frame.setSize(300, 150);
 
         JPanel panel = new JPanel();
 
@@ -437,9 +471,9 @@ public class GUI implements GUIIOHandler {
 
         this.frame.add(panel);
 
-        // this.frame.pack();
         this.frame.setVisible(true);
     }
+
 
     public static void main(String[] args) {
         GUI gui = new GUI();
@@ -462,10 +496,18 @@ public class GUI implements GUIIOHandler {
         game.getPlayer(0).getAvailableShips(1)[0].setCell(game.getArea().getCell(9));
         game.getPlayer(0).getAvailableShips(1)[0].setCell(game.getArea().getCell(9));
         game.getPlayer(0).getAvailableShips(1)[0].setCell(game.getArea().getCell(9));
-        int[][] r = gui.exterminate(1, 2);
+        game.getPlayer(0).getAvailableShips(1)[0].setCell(game.getArea().getCell(33));
+        int[][][] r = gui.explore(0, 2);
         System.out.println(Arrays.deepToString(r));
     }
 
+    /**
+     * Get the server IP address from the GUI.
+     * This method displays a form for entering the server IP and waits for the user to submit the form.
+     * If the server IP or username is empty, it returns the username instead.
+     *
+     * @return the server IP address or the username if the server IP is empty
+     */
     public synchronized String getIp() {
         this.state = State.FORM;
         this.displayForm();
@@ -487,10 +529,24 @@ public class GUI implements GUIIOHandler {
         return serverIp;
     }
 
+    /**
+     * Get the username.
+     *
+     * @return the username
+     */
     public String getUserName() {
         return this.username;
     }
 
+    /**
+     * Get the ID of the clicked cell based on the coordinates.
+     * This method calculates the distance between the clicked coordinates and the coordinates of each cell,
+     * and returns the ID of the closest cell.
+     *
+     * @param x the x-coordinate of the click
+     * @param y the y-coordinate of the click
+     * @return the ID of the closest cell
+     */
     private static int getClickedCell(int x, int y) {
         return coords.entrySet().stream()
                 .min((entry1, entry2) -> Double.compare(distance(x, y, entry1.getValue()), distance(x, y, entry2.getValue())))
@@ -498,10 +554,25 @@ public class GUI implements GUIIOHandler {
                 .orElseThrow(() -> new IllegalArgumentException("No closest point found"));
     }
 
+    /**
+     * Calculate the distance between two points.
+     *
+     * @param x the x-coordinate of the first point
+     * @param y the y-coordinate of the first point
+     * @param p the coordinates of the second point
+     * @return the distance between the two points
+     */
     private static double distance(int x, int y, int[] p) {
         return Math.sqrt(Math.pow(x - p[0], 2) + Math.pow(y - p[1], 2));
     }
 
+    /**
+     * Display an error message for a specific player.
+     * This method updates the GUI to show an error message if the player ID matches the current player ID.
+     *
+     * @param message  the error message to display
+     * @param playerId the ID of the player to display the error message for
+     */
     @Override
     public synchronized void displayError(String message, int playerId) {
         if (playerId != this.playerId) {
@@ -511,10 +582,17 @@ public class GUI implements GUIIOHandler {
         this.displayGame();
     }
 
+    /**
+     * Wait for user input with a specific input state and message.
+     * This method sets the input state, updates the GUI with the provided message, and waits for user input.
+     *
+     * @param inputState the input state to set
+     * @param txt        the message to display
+     */
     private synchronized void waitInput(InputState inputState, String txt) {
         if (this.inputState != InputState.IDLE) {
             try {
-                this.lock.wait();
+                lock.wait();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -529,74 +607,85 @@ public class GUI implements GUIIOHandler {
         }
     }
 
+    /**
+     * Reset the input mode to IDLE and update the GUI.
+     * This method resets the input state to IDLE, clears the text info, and updates the GUI.
+     */
     private synchronized void resetInputMode() {
         this.inputState = InputState.IDLE;
         this.resetTextInfo();
         this.displayGame();
         try {
-            this.lock.notify();
+            lock.notify();
         } catch (Exception _) {
         }
     }
 
+    /**
+     * Get the ID of the starting cell for a specific player.
+     * This method waits for the player to select a starting cell and returns the ID of the selected cell.
+     *
+     * @param playerId the ID of the player selecting the starting cell
+     * @return the ID of the selected starting cell
+     */
     @Override
     public synchronized int getStartingCellId(int playerId) {
-        // this.inputState = InputState.CELL;
-        // this.printTextInfo("Chose a cell to place your ship");
-        // this.displayGame();
         System.out.println("Chose a starting cell");
 
-        // wait for player input
-        // synchronized (this) {
-        //     try {
-        //         this.wait();
-        //     } catch (InterruptedException e) {
-        //         throw new RuntimeException(e);
-        //     }
-        // }
         this.waitInput(InputState.CELL, "Chose a cell to place your ship");
 
         int cellId = (int) this.tempInputValue;
         this.resetInputMode();
-        System.out.println(">>> Starting cell : "+cellId);
+        System.out.println(">>> Starting cell : " + cellId);
         return cellId;
     }
 
+    /**
+     * Print the provided text info if the current text info is not an error.
+     *
+     * @param txt the text info to print
+     */
     private void printTextInfo(String txt) {
-        if (!this.textInfo[0].equals("error")){
-            System.out.println(this.textInfo[1] + " TO " + txt);
+        if (!this.textInfo[0].equals("error")) {
+            // System.out.println(this.textInfo[1] + " TO " + txt);
             this.textInfo = new String[]{"info", txt};
         }
     }
 
+    /**
+     * Reset the text info to the default message.
+     */
     private void resetTextInfo() {
         this.textInfo = new String[]{"info", "Waiting for your turn"};
     }
 
+    /**
+     * Get the command orders for a specific player.
+     * This method waits for the player to choose the command orders and returns them.
+     *
+     * @param playerId the ID of the player choosing the command orders
+     * @return an array of Command objects representing the chosen command orders
+     */
     @Override
     public synchronized Command[] getCommandOrders(int playerId) {
-        // this.inputState = InputState.COMMAND;
-        // this.printTextInfo("Chose commands order");
-        // this.displayGame();
         System.out.println("Chose commands order");
-
-        // synchronized (this) {
-        //     try {
-        //         wait();
-        //     } catch (InterruptedException e) {
-        //         throw new RuntimeException(e);
-        //     }
-        // }
 
         this.waitInput(InputState.COMMAND, "Chose commands order");
 
         Command[] commands = (Command[]) this.tempInputValue;
         this.resetInputMode();
-        // this.displayGame();
         System.out.println(Arrays.toString(commands));
         return commands;
     }
 
+    /**
+     * Expand the player's ships to new cells.
+     * This method allows the player to choose cells to expand their ships to and returns the details of the expansion.
+     *
+     * @param playerId the ID of the player expanding their ships
+     * @param nShips   the number of ships to expand
+     * @return a 2D array where each sub-array contains the cell ID and the number of ships placed on that cell
+     */
     @Override
     public synchronized int[][] expand(int playerId, int nShips) {
         System.out.println("Expand");
@@ -639,10 +728,18 @@ public class GUI implements GUIIOHandler {
         }
 
         this.resetInputMode();
-        System.out.println(">>> Expanded ships : "+Arrays.deepToString(ships.toArray(new int[0][0])));
+        System.out.println(">>> Expanded ships : " + Arrays.deepToString(ships.toArray(new int[0][0])));
         return ships.toArray(new int[0][0]);
     }
 
+    /**
+     * Explore new cells with the player's fleet.
+     * This method allows the player to choose cells to explore with their fleet and returns the details of the exploration.
+     *
+     * @param playerId the ID of the player exploring with their fleet
+     * @param nFleet   the number of fleets to explore with
+     * @return a 3D array where each sub-array contains the details of the exploration
+     */
     @Override
     public synchronized int[][][] explore(int playerId, int nFleet) {
         System.out.println("Explore");
@@ -675,6 +772,10 @@ public class GUI implements GUIIOHandler {
             nShips = (int) this.tempInputValue;
             this.resetInputMode();
 
+            if (nShips == 0) {
+                continue;
+            }
+
             this.waitInput(InputState.CELL, "Chose a destination for the fleet");
             destCellId = (int) this.tempInputValue;
             this.resetInputMode();
@@ -682,7 +783,8 @@ public class GUI implements GUIIOHandler {
                 this.displayError("This cell is already owned by another player", playerId);
                 continue;
             }
-            if (area.getCell(startCellId).distance(area.getCell(destCellId), 2) != 1) {
+            Integer distance = area.getCell(startCellId).distance(area.getCell(destCellId), 2);
+            if (distance == null || distance != 1) {
                 this.displayError("The destination cell is not a neighbor of the starting cell", playerId);
                 continue;
             }
@@ -722,7 +824,8 @@ public class GUI implements GUIIOHandler {
                     this.displayError("This cell is already owned by another player", playerId);
                     continue;
                 }
-                if (area.getCell(destCellId).distance(area.getCell(destCellId2), 2) != 1) {
+                Integer distance2 = area.getCell(destCellId).distance(area.getCell(destCellId2), 2);
+                if (distance2 == null || distance2 != 1) {
                     this.displayError("The destination cell is not a neighbor of the starting cell", playerId);
                     continue;
                 }
@@ -745,14 +848,22 @@ public class GUI implements GUIIOHandler {
 
         this.resetInputMode();
 
-        int [][][] result = new int[input.size()][][];
+        int[][][] result = new int[input.size()][][];
         for (int i = 0; i < input.size(); i++) {
             result[i] = input.get(i).toArray(new int[0][0]);
         }
-        System.out.println(">>> Explored ships : "+Arrays.deepToString(result));
+        System.out.println(">>> Explored ships : " + Arrays.deepToString(result));
         return result;
     }
 
+    /**
+     * Exterminate enemy ships on specific cells.
+     * This method allows the player to choose cells to exterminate enemy ships and returns the details of the extermination.
+     *
+     * @param playerId the ID of the player exterminating enemy ships
+     * @param nSystem  the number of systems to exterminate
+     * @return a 2D array where each sub-array contains the details of the extermination
+     */
     @Override
     public synchronized int[][] exterminate(int playerId, int nSystem) {
         System.out.println("Exterminate");
@@ -784,14 +895,14 @@ public class GUI implements GUIIOHandler {
             List<Ship> attackingShips = new ArrayList<>();
             List<Ship> attackedShips = new ArrayList<>(Arrays.asList(attackedCell.getShips()));
 
-            while(true) {
+            while (true) {
                 this.skipable = true;
                 this.waitInput(InputState.CELL, "Chose a cell to attack from");
                 this.skipable = false;
                 id = (int) this.tempInputValue;
                 this.resetInputMode();
 
-                if (id == -1) {;
+                if (id == -1) {
                     break;
                 }
 
@@ -799,7 +910,8 @@ public class GUI implements GUIIOHandler {
                     this.displayError("You can't attack from a cell you don't own", playerId);
                     continue;
                 }
-                if (area.getCell(cellId).distance(area.getCell(id), 2) == null) {
+                Integer distance = area.getCell(id).distance(area.getCell(cellId), 2);
+                if (distance == null || distance != 1) {
                     this.displayError("The destination cell is not a neighbor of the starting cell", playerId);
                     continue;
                 }
@@ -838,35 +950,31 @@ public class GUI implements GUIIOHandler {
                 input.add(currentAttack);
                 nSystem--;
             }
-
-            // nSystem--;
         }
-
 
         this.resetInputMode();
         int[][] result = new int[input.size()][];
         for (int i = 0; i < input.size(); i++) {
             result[i] = input.get(i).stream().mapToInt(Integer::intValue).toArray();
         }
-        System.out.println(">>> Exterminated ships : "+Arrays.deepToString(result));
+        System.out.println(">>> Exterminated ships : " + Arrays.deepToString(result));
         return result;
     }
 
+    /**
+     * Score a sector for a specific player.
+     * This method allows the player to choose a sector to score and returns the ID of the scored sector.
+     *
+     * @param id the ID of the player scoring the sector
+     * @return the ID of the scored sector
+     */
     @Override
     public synchronized int score(int id) {
-        // this.inputState = InputState.CELL;
         System.out.println("Scoring a sector");
         List<Sector> scorableSectors = this.game.getScorablesSectors();
         List<Integer> scorableSectorIds = scorableSectors.stream().map(Sector::getId).collect(Collectors.toList());
-        // this.printTextInfo("Chose a sector to score: "+scorableSectorIds.toString());
-        // this.displayGame();
 
-        // try {
-        //     this.wait();
-        // } catch (InterruptedException e) {
-        //     throw new RuntimeException(e);
-        // }
-        this.waitInput(InputState.CELL, "Chose a sector to score: "+scorableSectorIds.toString());
+        this.waitInput(InputState.CELL, "Chose a sector to score: " + scorableSectorIds.toString());
 
         int cellId = (int) this.tempInputValue;
         Sector sector = this.game.getArea().getCell(cellId).getSector();
@@ -880,29 +988,45 @@ public class GUI implements GUIIOHandler {
         return sectorId;
     }
 
+    /**
+     * Display the winners of the game.
+     * This method updates the GUI to show the winners of the game.
+     *
+     * @param winnersIds an array of player IDs representing the winners
+     */
     @Override
     public synchronized void displayWinner(int[] winnersIds) {
         this.state = State.END;
         StringBuilder txt = new StringBuilder("The winners are: ");
-        for(int i=0; i<winnersIds.length; i++) {
+        for (int i = 0; i < winnersIds.length; i++) {
             Player p = this.game.getPlayer(winnersIds[i]);
             txt.append(p.getName());
-            if (i!=winnersIds.length-1) {
+            if (i != winnersIds.length - 1) {
                 txt.append(" & ");
             }
         }
 
-        this.textInfo = new String[] {"info", txt.toString()};
+        this.textInfo = new String[]{"info", txt.toString()};
         this.displayGame();
     }
 
+    /**
+     * Display a draw message.
+     * This method updates the GUI to show a draw message.
+     */
     @Override
     public synchronized void displayDraw() {
         this.state = State.END;
-        this.textInfo = new String[] {"info", "It's Draw !!!!"};
+        this.textInfo = new String[]{"info", "It's Draw !!!!"};
         this.displayGame();
     }
 
+    /**
+     * Set the player ID for the current game.
+     * This method sets the player ID and updates the game state to GAME.
+     *
+     * @param playerId the ID of the player
+     */
     public synchronized void setPlayerId(int playerId) {
         this.playerId = playerId;
         this.state = State.GAME;
