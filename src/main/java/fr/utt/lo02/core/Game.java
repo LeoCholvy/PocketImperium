@@ -41,6 +41,9 @@ public class Game {
         if (instance != null) {
             throw new IllegalStateException("Game already created");
         }
+        if (players.length <= 1 || players.length >= 4) {
+            throw new IllegalGameStateExeceptions("The number of players must be between 2 and 3");
+        }
         instance = this;
         this.players = players;
         this.area = new Area(isDefaultmap);
@@ -89,12 +92,6 @@ public class Game {
      * @throws IllegalGameStateExeceptions if an instance of the game already exists or the number of players is not between 2 and 3
      */
     public static Game getInstance(Player[] players, String name) {
-        if (instance != null) {
-            throw new IllegalGameStateExeceptions("Game already created");
-        }
-        if (players.length <= 1 || players.length >= 4) {
-            throw new IllegalGameStateExeceptions("The number of players must be between 2 and 3");
-        }
         Game game = new Game(players, false);
         game.setName(name);
         return game;
@@ -239,7 +236,7 @@ public class Game {
      * @return the cell where the ships are placed
      */
     public Cell placeTwoShips(Player player) {
-        int input = this.input.getStartingCellId(player.getId());
+        int input = player.getStartingCellId();
         if (!(input >= 0 && input < this.area.getGrid().length)) {
             this.input.displayError("The cell id must be between 0 and " + (this.area.getGrid().length - 1), player.getId());
             return placeTwoShips(player);
@@ -450,6 +447,7 @@ public class Game {
      * @return a list of scorable sectors
      */
     public List<Sector> getScorablesSectors() {
+        // FIXME : this method should be in the Area class
         return Stream.of(this.area.getSectors()).filter(Sector::isScorable).toList();
     }
 

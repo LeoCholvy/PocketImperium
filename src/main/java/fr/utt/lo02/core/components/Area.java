@@ -4,6 +4,7 @@ import com.google.gson.annotations.Expose;
 import fr.utt.lo02.core.Game;
 import fr.utt.lo02.core.IllegalGameStateExeceptions;
 import fr.utt.lo02.core.InvalidGameInputExeceptions;
+import fr.utt.lo02.core.Player;
 import fr.utt.lo02.data.DataManipulator;
 
 import java.util.ArrayList;
@@ -270,5 +271,31 @@ public class Area {
         for (Cell cell : this.grid) {
             cell.resetSystems();
         }
+    }
+
+    /**
+     * Retrieves the Middle sector.
+     *
+     * @return the Middle sector
+     * @throws IllegalGameStateExeceptions if there is not exactly one Middle sector
+     */
+    public Cell[] getCells() {
+        return grid;
+    }
+
+    /**
+     * Retrieves the Middle sector.
+     *
+     * @return the Middle sector
+     * @throws IllegalGameStateExeceptions if there is not exactly one Middle sector
+     */
+    public List<Cell> getEnemyCells(Player player) {
+        List<Cell> enemyCells = new ArrayList<>();
+        for (Cell cell : grid) {
+            if (cell.getOwner() != player && cell.getOwner() != null && cell.getSystem() != null) {
+                enemyCells.add(cell);
+            }
+        }
+        return enemyCells;
     }
 }

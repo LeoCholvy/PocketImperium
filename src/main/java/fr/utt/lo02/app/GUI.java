@@ -96,7 +96,7 @@ public class GUI implements GUIIOHandler {
     private int playerId;
     private InputState inputState = InputState.IDLE;
     // private InputState inputState = InputState.CELL;
-    private Color[] playersColor = new Color[]{Color.WHITE, Color.RED, Color.BLUE};
+    private Color[] playersColor = new Color[]{Color.WHITE, Color.RED, Color.GREEN};
     private int w = 400;
     private int h = 600;
     private int panelHeight = 40;
@@ -148,7 +148,7 @@ public class GUI implements GUIIOHandler {
         // load the map image
         BufferedImage map;
         try {
-            map = ImageIO.read(new File("src/ressources/assets/map.png"));
+            map = ImageIO.read(new File("src/ressources/assets/map_sans_system.jpg"));
 
             Image scaledMap = map.getScaledInstance(w, h, Image.SCALE_SMOOTH);
             map = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
@@ -162,6 +162,9 @@ public class GUI implements GUIIOHandler {
 
         // display the ships (number of ships on each cell)
         this.displayShips(gamePanel);
+
+        // display the systems
+        this.displaySystems(gamePanel);
 
         mapLabel.setBounds(0, this.panelHeight, w, h);
         gamePanel.setLayout(null);
@@ -190,6 +193,7 @@ public class GUI implements GUIIOHandler {
         this.frame.setResizable(false);
         this.frame.setVisible(true);
     }
+
 
     /**
      * Display the top panel of the game.
@@ -428,8 +432,44 @@ public class GUI implements GUIIOHandler {
             centerLabel.setFont(new Font("Arial", Font.PLAIN, 20));
             centerLabel.setForeground(this.playersColor[this.game.getArea().getCell(id).getOwner().getId()]);
             int x = coords.get(id)[0];
-            int y = coords.get(id)[1] + this.panelHeight;
+            int y = coords.get(id)[1] + this.panelHeight - 10;
             centerLabel.setBounds(x - 20, y - 10, 40, 20);
+            gamePanel.add(centerLabel);
+        }
+    }
+
+
+    private void displaySystems(JPanel gamePanel) {
+        for (int id : coords.keySet()) {
+            if (this.game.getArea().getCell(id).getSystem() == null) {
+                continue;
+            }
+
+            int lvl = this.game.getArea().getCell(id).getSystem().getLevel();
+            if (lvl == 3) {
+                continue;
+            }
+            Color color;
+            String txt;
+            if (lvl == 1) {
+                color = new Color(128, 0, 128);
+                txt = "I";
+            } else {
+                color = new Color(255, 165, 0);
+                txt = "II";
+            }
+
+
+            int x = coords.get(id)[0];
+            int y = coords.get(id)[1] + this.panelHeight + 5;
+            int r = 12;
+
+            JLabel centerLabel = new JLabel(txt, SwingConstants.CENTER);
+            centerLabel.setOpaque(true);
+            centerLabel.setBackground(color);
+            centerLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+            centerLabel.setForeground(Color.WHITE);
+            centerLabel.setBounds(x - r, y - r, 2 * r, 2 * r);
             gamePanel.add(centerLabel);
         }
     }
@@ -696,7 +736,7 @@ public class GUI implements GUIIOHandler {
             int nShipsOnCell;
             int cellId;
             this.skipable = true;
-            this.waitInput(InputState.CELL, "Chose a cell to expand");
+            this.waitInput(InputState.CELL, "Chose a cell to expand ("+nShipsMax+" ships left)");
             this.skipable = false;
             cellId = (int) this.tempInputValue;
             this.resetInputMode();
@@ -751,7 +791,7 @@ public class GUI implements GUIIOHandler {
             List<int[]> fleet = new ArrayList<>();
             int startCellId, nShips, destCellId;
             this.skipable = true;
-            this.waitInput(InputState.CELL, "Chose a cell to start the exploration");
+            this.waitInput(InputState.CELL, "Chose a cell to start the exploration ("+nFleet+" fleets left)");
             this.skipable = false;
             startCellId = (int) this.tempInputValue;
             this.resetInputMode();
@@ -876,7 +916,7 @@ public class GUI implements GUIIOHandler {
             int cellId, id, nShips;
 
             this.skipable = true;
-            this.waitInput(InputState.CELL, "Chose a cell to exterminate");
+            this.waitInput(InputState.CELL, "Chose a cell to exterminate ("+nSystem+" systems left)");
             this.skipable = false;
             cellId = (int) this.tempInputValue;
             this.resetInputMode();
@@ -923,7 +963,7 @@ public class GUI implements GUIIOHandler {
                 if (nShips == 0) {
                     continue;
                 }
-                if (currentAttack.size() == 0) {
+                if (currentAttack.isEmpty()) {
                     currentAttack.add(cellId);
                 }
 

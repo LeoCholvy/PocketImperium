@@ -10,6 +10,7 @@ import fr.utt.lo02.core.Game;
 public class Sector {
     @Expose
     private final int id;
+    @Expose
     private boolean used = false;
     @Expose
     private int[] cellIds;

@@ -53,7 +53,16 @@ public class Client extends UnicastRemoteObject implements ClientRemote, Runnabl
                 }
             }
 
-            this.serverRemote = (ServerRemote) Naming.lookup("rmi://"+ip+":1099/PocketImperium");
+            if (ip == "") {
+                ip = "rmi://localhost:1099/PocketImperium";
+            } else if (ip.length() > 3 && ip.substring(0, 3).equals("rmi")) {
+
+            } else {
+                ip = "rmi://"+ip+":1099/PocketImperium";
+            }
+            System.out.println("Connecting to the server at " + ip);
+
+            this.serverRemote = (ServerRemote) Naming.lookup(ip);
             System.out.println("Connected to the server");
             if (this.serverRemote.registerClient(this)) {
                 System.out.println("Can't register to the server");

@@ -1,5 +1,6 @@
 package fr.utt.lo02.RmiServer;
 
+import fr.utt.lo02.IO.IA;
 import fr.utt.lo02.IO.IOHandler;
 import fr.utt.lo02.core.Game;
 import fr.utt.lo02.core.Player;
@@ -12,8 +13,10 @@ import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Stream;
 
@@ -29,6 +32,7 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
     private HashMap<Player, ClientRemote> clientsRemote;
     private boolean start;
     private final static Object lock = new Object();
+    private boolean fill = false;
 
     /**
      * Constructs a new Server instance and starts the server.
@@ -144,7 +148,11 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
         Thread t = new Thread(() -> {
             System.out.println("press enter to start the game");
             try {
-                reader.readLine();
+                String input = reader.readLine();
+
+                if (input.equals("fill")) {
+                    this.fill = true;
+                }
                 this.start = true;
                 synchronized (lock) {
                     lock.notifyAll();
@@ -169,12 +177,26 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
 
         this.state = null;
 
-        Player[] players = this.clientsRemote.keySet().toArray(new Player[0]);
+        List<Player> playersList = new ArrayList<>(this.clientsRemote.keySet().stream().toList());
+        int nIA = 3 - playersList.size();
+        if (!this.fill) {
+            nIA = 0;
+        }
+        while (nIA > 0) {
+            Player p = new Player("BOT" + nIA, playersList.size(), true, new IA());
+            playersList.add(p);
+            System.out.println("IA " + p.getName() + " connected, playerId = " + p.getId());
+            nIA--;
+        }
+
+        Player[] players = playersList.toArray(new Player[0]);
+
         // check if all id are unique
         if (Stream.of(players).map(Player::getId).distinct().count() != players.length) {
             throw new GameRemoteExeceptions("Error while waiting for new player");
         }
         this.game = Game.getInstance(players, gameName, true);
+        IA.setGameInstance(this.game);
 
         return this.game;
     }
@@ -266,6 +288,10 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
      * @param playerId the ID of the player
      */
     public void displayError(String message, int playerId) {
+        if(!this.game.getPlayer(playerId).isHuman()) {
+            this.game.getPlayer(playerId).getInput().displayError(message, playerId);
+        }
+
         System.out.println("Error : " + message);
         try {
             for (ClientRemote client : this.clientsRemote.values()) {
@@ -309,7 +335,30 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
         CountDownLatch latch = new CountDownLatch(nPlayers);
         for (Player p : this.game.getPlayers()) {
             new Thread(() -> {
+
                 while (true) {
+                    // IA
+                    if (!p.isHuman()) {
+                        try {
+                            System.out.println("Waiting for player " + p.getName() + " to enter commands");
+                            Command[] commands = p.getInput().getCommandOrder();
+                            System.out.println("Player " + p.getName() + " entered commands");
+                            System.out.println(Arrays.toString(commands));
+                            this.sendMessages(p.getId(), Arrays.toString(commands));
+                            synchronized (commandOrders) {
+                                commandOrders.put(p.getId(), commands);
+                            }
+                            latch.countDown();
+                            break;
+                        } catch (Exception e) {
+                            p.getInput().displayError("", p.getId());
+                            continue;
+                        }
+                    }
+
+
+
+                    // humans
                     try {
                         while (true) {
                             try {
@@ -488,7 +537,7 @@ public class Server extends UnicastRemoteObject implements ServerRemote, IOHandl
         System.out.println("Starting the game");
         this.game.playGame();
         System.out.println("Game finished");
-        exit(0);
+        // exit(0);
     }
 
     /**

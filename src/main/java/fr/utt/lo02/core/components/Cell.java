@@ -50,6 +50,22 @@ public class Cell {
     }
 
     /**
+     * Returns the free neighbors of the cell for the specified player.
+     *
+     * @param player the player to check for
+     * @return a list of free neighboring cells
+     */
+    public List<Cell> getFrendlyNeighbors(Player player) {
+        List<Cell> freeNeighbors = new java.util.ArrayList<>();
+        for (Cell neighbor : this.getNeighbors()) {
+            if (neighbor.getOwner() == null || neighbor.getOwner() == player) {
+                freeNeighbors.add(neighbor);
+            }
+        }
+        return freeNeighbors;
+    }
+
+    /**
      * Sets the neighbors of the cell.
      *
      * @param neighbors an array of neighboring cells
@@ -112,7 +128,7 @@ public class Cell {
      */
     public Ship[] getShips() {
         List<Ship> ships = new java.util.ArrayList<>(List.of());
-        for (Player player : Game.getInstance().getAlivePlayers()) {
+        for (Player player : Game.getInstance().getPlayers()) {
             for (Ship ship : player.getShips()) {
                 if (ship.getCell() == this) {
                     ships.add(ship);

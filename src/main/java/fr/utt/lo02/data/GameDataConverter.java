@@ -1,9 +1,11 @@
 package fr.utt.lo02.data;
 
+import fr.utt.lo02.IO.IA;
 import fr.utt.lo02.core.Game;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.Gson;
+import fr.utt.lo02.core.Player;
 
 /**
  * The GameDataConverter class provides methods to convert Game objects to and from JSON format.
@@ -38,6 +40,30 @@ public class GameDataConverter {
         game.initSectorsCells();
         game.initPlayerIterator();
         game.setName(name);
+
+        //init the IA
+        IA.setGameInstance(game);
+        for (Player player : game.getPlayers()) {
+            if (!player.isHuman()) {
+                player.initIO(new IA());
+            }
+        }
+        return game;
+    }
+
+
+    public static Game copy(Game gameOriginal) {
+        String json = toJson(gameOriginal);
+
+
+        Game game = gson.fromJson(json, Game.class);
+        Game.setInstance(game); // FIXME: this is not the right way to do it
+        // the following methods need to get the instance of the game from Game.getInstance()
+        game.initNeighbors();
+        game.initShipsCells();
+        game.initSectorsCells();
+        Game.setInstance(gameOriginal);//FIXME : this is not the right way to do it
+
         return game;
     }
 }

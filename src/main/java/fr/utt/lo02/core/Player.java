@@ -1,6 +1,7 @@
 package fr.utt.lo02.core;
 
 import com.google.gson.annotations.Expose;
+import fr.utt.lo02.IO.IOHandlerIA;
 import fr.utt.lo02.core.components.Area;
 import fr.utt.lo02.core.components.Cell;
 import fr.utt.lo02.core.components.Sector;
@@ -25,6 +26,7 @@ public class Player {
     private Player nextPlayer;
     @Expose
     private boolean isAI = false;
+    private IOHandlerIA io = null;
 
     /**
      * Constructor for the Player class.
@@ -43,9 +45,10 @@ public class Player {
         }
     }
 
-    public Player(String name, int id, boolean isAI) {
+    public Player(String name, int id, boolean isAI, IOHandlerIA io) {
         this(name, id);
         this.isAI = isAI;
+        this.io = io;
     }
 
     /**
@@ -138,7 +141,14 @@ public class Player {
      * Score the player based on the sector ID.
      */
     public void score (int multiplier) {
-        int SectorId = Game.getInstance().getInput().score(this.getId());
+        int SectorId;
+        if (!this.isHuman()) {
+            SectorId = this.getInput().score(this.getId());
+        } else {
+            SectorId = Game.getInstance().getInput().score(this.getId());
+        }
+
+
         // check if the input is valid
         Sector sector = null;
         try {
@@ -171,7 +181,14 @@ public class Player {
      * @param nShips the number of ships to expand
      */
     public void expand(int nShips) {
-        int[][] input = Game.getInstance().getInput().expand(this.getId(), nShips);
+        int[][] input;
+        if (!this.isHuman()) {
+            input = this.getInput().expand(this.getId(), nShips);
+        } else {
+            input = Game.getInstance().getInput().expand(this.getId(), nShips);
+        }
+
+
         // should be array of [cellId, nShips]
         // check if the input is valid
         // can't add too much ships
@@ -215,7 +232,13 @@ public class Player {
      * @param nFleet the number of fleets to explore with
      */
     public void explore(int nFleet) {
-        int[][][] input = Game.getInstance().getInput().explore(this.getId(), nFleet);
+        int[][][] input;
+        if (!this.isHuman()) {
+            input = this.getInput().explore(this.getId(), nFleet);
+        } else {
+            input = Game.getInstance().getInput().explore(this.getId(), nFleet);
+        }
+
         // check if the input is valid
         Area area = Game.getInstance().getArea();
         if (input == null) {
@@ -329,7 +352,14 @@ public class Player {
     public void exterminate(int nSystem) {
         Game game = Game.getInstance();
         Area area = game.getArea();
-        int[][] input = game.getInput().exterminate(this.getId(), nSystem);
+
+        int[][] input;
+        if (!this.isHuman()) {
+            input = this.getInput().exterminate(this.getId(), nSystem);
+        } else {
+            input = game.getInput().exterminate(this.getId(), nSystem);
+        }
+
         // check if the input is valid
         if (input == null) {
             game.getInput().displayError("Invalid input",this.getId());
@@ -500,5 +530,37 @@ public class Player {
      */
     public boolean isHuman() {
         return !this.isAI;
+    }
+
+    /**
+     * Get the player's IOHandler.
+     *
+     * @return the player's IOHandler
+     */
+    public IOHandlerIA getInput() {
+        return this.io;
+    }
+
+    /**
+     * Get the starting cell ID of the player.
+     *
+     * @return the starting cell ID of the player
+     */
+    public int getStartingCellId() {
+        if (!this.isHuman()) {
+            return this.getInput().getStartingCellId(this.getId());
+        } else {
+            return Game.getInstance().getInput().getStartingCellId(this.getId());
+        }
+    }
+
+
+    /**
+     * Get the owned systems of the player.
+     *
+     * @return a list of owned systems
+     */
+    public void initIO(IOHandlerIA io) {
+        this.io = io;
     }
 }

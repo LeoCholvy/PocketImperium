@@ -3,6 +3,7 @@ package fr.utt.lo02;
 import fr.utt.lo02.IO.*;
 import fr.utt.lo02.RmiServer.Client;
 import fr.utt.lo02.RmiServer.Server;
+import fr.utt.lo02.app.GUI;
 import fr.utt.lo02.core.Game;
 import fr.utt.lo02.core.Player;
 import fr.utt.lo02.core.components.Ship;
@@ -13,6 +14,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 import java.util.Set;
+
+import static java.lang.System.exit;
 
 public class Main {
     // public static Game game;
@@ -69,13 +72,29 @@ public class Main {
             // java.lang.System.out.println(GameDataConverter.toJson(game));
 
             // Game game = Game.getInstance(new Player[]{new Player("Dodo", 0), new Player("Leo", 1)}, "stonks", true);
-            Game game = Game.getInstance(DataManipulator.loadSave("feur"), "stonks");
+            // Game game = Game.getInstance(DataManipulator.loadSave("feur"), "stonks");
+            // Server server = new Server();
+            // game.initIO(server);
+            // server.waitForPlayersConnection(game);
+            // server.startGame();
+            // game.initIO(new CLI(game));
+            // game.playGame();
+
+            // Game game = Game.getInstance(players, "debug");
+            // IA.setGameInstance(game);
+            // game.initIO(new CLI(game));
+            // game.playGame();
             Server server = new Server();
+            Player[] players = new Player[]{new Player("Bot1", 0, true, new IA()), new Player("Bot2", 1, true, new IA())};
+            Game game = Game.getInstance(players, "debug");
+            IA.setGameInstance(game);
             game.initIO(server);
             server.waitForPlayersConnection(game);
             server.startGame();
-            // game.initIO(new CLI(game));
-            // game.playGame();
+            GUI gui = new GUI();
+            gui.setPlayerId(0);
+            gui.setGameInstance(game);
+            gui.displayGame();
 
             return;
         }
@@ -110,12 +129,18 @@ public class Main {
                 server.startGame();
             } else {
                 Server server = new Server();
-                Game game = server.waitForNewPlayer(saveName);
+                Game game = null;
+                try {
+                    game = server.waitForNewPlayer(saveName);
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                    exit(1);
+                }
                 game.initIO(server);
                 System.out.println("Game " + saveName + " created");
                 server.startGame();
             }
-
+            exit(0);
         }
         if (args.length == 1 && args[0].equals("client")) {
             Client client = new Client();
@@ -124,7 +149,6 @@ public class Main {
             Game game = Game.getInstance(new Player[]{new Player("Dodo", 0), new Player("Leo", 1)}, "cli");
             game.initIO(new CLI(game));
             game.playGame();
-
         }
     }
 }
